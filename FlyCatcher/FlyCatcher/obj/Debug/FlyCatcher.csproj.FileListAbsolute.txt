@@ -49,3 +49,6 @@ D:\Users\Martin_Sery\Documents\Visual Studio 2015\Projects\FlyCatcher\FlyCatcher
 D:\Users\Martin_Sery\Documents\Visual Studio 2015\Projects\FlyCatcher\FlyCatcher\bin\Debug\AForge.Vision.xml
 D:\Users\Martin_Sery\Documents\Visual Studio 2015\Projects\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.MainForm.resources
 d:\Users\Martin_Sery\Documents\Visual Studio 2015\Projects\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.VideoInputForm.resources
+d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\FlyCatcher.exe.config
+d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.exe
+d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.pdb

@@ -68,7 +68,14 @@ namespace FlyCatcher
             return index >= 0 && index <= lastIndex;
         }
 
-
+        /// <summary>
+        /// Constructor for photo giver, that iterates over images in a folder.
+        /// </summary>
+        /// <param name="photoMask"></param>
+        /// <param name="folder"></param>
+        /// <param name="fileSuffix"></param>
+        /// <param name="numbers"></param>
+        /// <param name="last"></param>
         public SeparatePhotoGiver(string photoMask, string folder, string fileSuffix, int numbers, int last)
         {
             actualIndex = 0;
