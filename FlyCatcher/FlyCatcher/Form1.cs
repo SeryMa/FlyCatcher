@@ -22,6 +22,8 @@ using AForge;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
+
+
 namespace FlyCatcher
 {
     public partial class MainForm : Form
@@ -29,14 +31,15 @@ namespace FlyCatcher
         private IPictureGiver<Bitmap> pictureGiver;
         private IPicturePreProcessor<Bitmap> pictureProcessor;
         private ICounter<Bitmap, Blob> blobCounter;
+        private MaskContainer maskContainer;
 
-        internal Color backgroundColor { get; private set; }
-        internal Color flyColor { get; private set; }
         internal bool shouldInvert { get { return invertCheckBox.Checked; } }
         internal int upperBoundValue { get { return (int)upperBound.Value; } }
         internal int lowerBoundValue { get { return (int)lowerBound.Value; } }
-
-        private Pen pen = new Pen(Color.Coral, 5);
+        internal byte[,] mask { get { return maskContainer.maskArray; } }
+        
+        private Pen blobHighliter = new Pen(Color.Coral, 5);
+        private Pen maskHighliter = new Pen(Color.Red, 4);
 
         //internal int width { get { return VideoBox_staticPicture.Width; } }
         //internal int height { get { return VideoBox_staticPicture.Height; } }
@@ -46,14 +49,15 @@ namespace FlyCatcher
             pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", "jpg", 5, 600);
             pictureProcessor = new BitmapPreProcessor(this);
             blobCounter = new PictureBlobCounter(this);
-
+            maskContainer = new MaskContainer(pictureGiver.First.Width, pictureGiver.First.Height, 255);
+            
             refreshActualFrame();
         }
 
         public MainForm()
         {
             InitializeComponent();
-
+            //TODO: make init
             debugInit();
         }
 
@@ -71,16 +75,16 @@ namespace FlyCatcher
 
             highlightFlies(VideoBox_processedPicture, processedImage, blobs);
             highlightFlies(VideoBox_staticPicture, rawIamge, blobs);
-            
+
             VideoBox_processedPicture.crossThreadOperation(() => Refresh());
             VideoBox_staticPicture.crossThreadOperation(() => Refresh());
         }
 
         Bitmap processImage(Bitmap image)
         {
-            return pictureProcessor.processImage(image);            
+            return pictureProcessor.processImage(image);
         }
-        
+
         void highlightFlies(PictureBox pictureBox, Bitmap image, ICollection<Blob> rects)
         {
             pictureBox.BackgroundImage = image;
@@ -88,7 +92,7 @@ namespace FlyCatcher
             Graphics gr = Graphics.FromImage(pictureBox.Image);
 
             foreach (var rect in rects)
-                gr.DrawEllipse(pen, rect.Rectangle);
+                gr.DrawEllipse(blobHighliter, rect.Rectangle);
 
         }
 
@@ -133,31 +137,6 @@ namespace FlyCatcher
             refreshActualFrame();
         }
 
-        private void VideoBox_MouseClick(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine($"Mouse position: {e.Location.ToString()}");
-            Color col = ((Bitmap)((PictureBox)sender).Image).GetPixel(e.X, e.Y);
-
-            switch (e.Button)
-            {
-                case MouseButtons.Left:
-                    Console.WriteLine($"Setting background color to: {col.ToString()}");
-                    backgroundColor = col;
-                    break;
-                case MouseButtons.Right:
-                    Console.WriteLine($"Setting fly color to: {col.ToString()}");
-                    flyColor = col;
-                    break;
-
-                case MouseButtons.None:
-                case MouseButtons.Middle:
-                case MouseButtons.XButton1:
-                case MouseButtons.XButton2:
-                default:
-                    break;
-            }
-        }
-
         int actualPicture;
         private void videoSlider_Scroll(object sender, EventArgs e)
         {
@@ -173,7 +152,8 @@ namespace FlyCatcher
             actualPicture = (int)actualIndex.Value;
 
             if (actualPicture > pictureGiver.RunTo)
-            { actualPicture = pictureGiver.RunTo;
+            {
+                actualPicture = pictureGiver.RunTo;
                 actualIndex.Value = actualPicture;
             }
 
@@ -198,7 +178,7 @@ namespace FlyCatcher
         }
 
         private void runAnalysisFrom_ValueChanged(object sender, EventArgs e)
-        {            
+        {
             pictureGiver.RunFrom = (int)runAnalysisFrom.Value;
             adjustSliders();
         }
@@ -223,9 +203,97 @@ namespace FlyCatcher
 
             if ((int)runAnalysisFrom.Value > pictureGiver.RunTo)
                 runAnalysisFrom.Value = pictureGiver.RunTo;
-        
+
             if (runAnalysisTo.Value < runAnalysisFrom.Value)
-                runAnalysisTo.Value = runAnalysisFrom.Value;            
+                runAnalysisTo.Value = runAnalysisFrom.Value;
+        }
+
+
+        enum DrawStyle { None, Ellipse, Rectangle, Curve };
+        DrawStyle actualStyle = DrawStyle.None;
+        bool validPoint = false;
+        int tmpX, tmpY;
+        Rectangle drawRectangle;
+
+        private void applyMaskToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            switch (actualStyle)
+            {
+                case DrawStyle.Curve:
+                    //TODO: curve doesn't work well
+                    //e.Graphics.DrawClosedCurve(maskHighliter, Points);
+                    break;
+                case DrawStyle.Ellipse:
+                    //Ellipse doesn't work with mask container
+                    break;
+                case DrawStyle.Rectangle:
+                    maskContainer += drawRectangle;
+                    break;
+                case DrawStyle.None:
+                default:
+                    break;
+            }
+
+            drawRectangle = new Rectangle();
+            refreshActualFrame();
+        }
+
+        private void Draw(object sender, MouseEventArgs e)
+        {
+            if (validPoint)
+            {
+                drawRectangle = MathFunctions.getRectangle(tmpX, tmpY, e.X, e.Y);
+                Refresh();
+            }
+        }
+
+        private void DrawNewPoint(object sender, MouseEventArgs e)
+        {
+            tmpX = e.X;
+            tmpY = e.Y;
+            validPoint = true;
+        }
+
+        private void DrawEnd(object sender, MouseEventArgs e)
+        {
+            validPoint = false;
+            //points.Add(new System.Drawing.Point(e.X, e.Y));
+        }
+
+        private void VideoBox_Paint(object sender, PaintEventArgs e)
+        {
+            switch (actualStyle)
+            {
+                case DrawStyle.Curve:
+                    //TODO: curve doesn't work well
+                    //e.Graphics.DrawClosedCurve(maskHighliter, Points);
+                    break;
+                case DrawStyle.Ellipse:
+                    e.Graphics.DrawEllipse(maskHighliter, drawRectangle);
+                    break;
+                case DrawStyle.Rectangle:
+                    e.Graphics.DrawRectangle(maskHighliter, drawRectangle);
+                    break;
+                case DrawStyle.None:
+                default:
+                    break;
+            }
+        }
+
+        private void StartDrawEllipse(object sender, EventArgs e)
+        {
+            actualStyle = DrawStyle.Ellipse;
+        }
+
+        private void StartDrawRectangle(object sender, EventArgs e)
+        {
+            actualStyle = DrawStyle.Rectangle;
+        }
+
+        //Todo: curve
+        private void StartDrawCurve(object sender, EventArgs e)
+        {
+            actualStyle = DrawStyle.Curve;
         }
     }
 }

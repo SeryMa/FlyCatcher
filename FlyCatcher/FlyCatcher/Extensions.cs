@@ -13,12 +13,36 @@ namespace FlyCatcher
     static class MathFunctions
     {
         public static double getPercent(double min, double max, double actual)
-        { return 100*( (actual - min) / (max - min)); }
+        { return 100 * ((actual - min) / (max - min)); }
 
         public static int getActual(double min, double max, double percent)
-        { return (int)Math.Floor(min + ((percent/100) * (max - min))); }
+        { return (int)Math.Floor(min + ((percent / 100) * (max - min))); }
 
+        public static Rectangle getRectangle(int x1, int y1, int x2, int y2)
+        {
+            return new Rectangle(Math.Min(x1, x2), Math.Min(y1, y2), Math.Abs(x1 - x2), Math.Abs(y1 - y2));
+        }
 
+        public static Rectangle getRectangle(Point a, Point b)
+        {
+            return getRectangle(a.X, a.Y, b.X, b.Y);
+        }
+
+        public static Rectangle getRectangle(Point p, int x, int y)
+        {
+            return getRectangle(p.X, p.Y, x, y);
+        }
+
+        public static bool isPointInRectangle(Point p, Rectangle rect)
+        {
+            return isPointInRectangle(p.X, p.Y, rect);
+        }
+
+        public static bool isPointInRectangle(int x, int y, Rectangle rect)
+        {
+            return ((y >= rect.Left && y <= rect.Right) &&
+                    (x >= rect.Top && x <= rect.Bottom));
+        }
     }
 
     static class Extensions
@@ -47,5 +71,34 @@ namespace FlyCatcher
 
             return AForge.Imaging.Image.Clone(image, format);
         }
+
+        public static byte[,] convertToArray(this Bitmap inPicture)
+        {
+            Bitmap picture = Grayscale.CommonAlgorithms.BT709.Apply(inPicture);
+
+            BitmapData data = picture.LockBits(new Rectangle(0, 0, picture.Width, picture.Height), ImageLockMode.ReadOnly, picture.PixelFormat);
+
+            try
+            {
+                IntPtr ptr = data.Scan0;
+                int stride = Math.Abs(data.Stride);
+                int bytes = stride * picture.Height;
+
+                byte[] rgbValues = new byte[bytes];
+                System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
+
+                byte[,] outputValues = new byte[stride, picture.Height];
+                for (int x = 0; x < picture.Height; x++)
+                    for (int y = 0; y < stride; y++)
+                        outputValues[x, y] = rgbValues[x * stride + y];
+
+                return outputValues;
+            }
+            finally
+            {
+                picture.UnlockBits(data);
+            }
+        }
     }
 }
+

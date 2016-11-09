@@ -141,6 +141,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Mask.cs" />
     <Compile Include="PictureBlobCounter.cs" />
     <Compile Include="PictureGiver.cs" />
     <Compile Include="PictureProcesser.cs" />

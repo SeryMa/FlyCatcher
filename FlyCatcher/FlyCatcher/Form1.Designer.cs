@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.localVideoCaptureDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,12 +47,17 @@
             this.videoSlider = new System.Windows.Forms.TrackBar();
             this.StopStartButton = new System.Windows.Forms.Button();
             this.VideoBox_processedPicture = new System.Windows.Forms.PictureBox();
+            this.MaskContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.MaskCIrcle = new System.Windows.Forms.ToolStripMenuItem();
+            this.MaskRectangle = new System.Windows.Forms.ToolStripMenuItem();
+            this.drawCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.VideoBox_staticPicture = new System.Windows.Forms.PictureBox();
             this.controlGroupBox = new System.Windows.Forms.GroupBox();
             this.upperBound = new System.Windows.Forms.NumericUpDown();
             this.lowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.applyMaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
@@ -61,6 +67,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.videoSlider)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox_processedPicture)).BeginInit();
+            this.MaskContextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox_staticPicture)).BeginInit();
             this.controlGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.upperBound)).BeginInit();
@@ -115,7 +122,7 @@
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fpsLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 413);
+            this.statusStrip.Location = new System.Drawing.Point(0, 465);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(736, 22);
             this.statusStrip.TabIndex = 1;
@@ -135,7 +142,7 @@
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(0, 24);
             this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Size = new System.Drawing.Size(736, 389);
+            this.mainPanel.Size = new System.Drawing.Size(736, 441);
             this.mainPanel.TabIndex = 2;
             // 
             // videoGroupBox
@@ -155,7 +162,7 @@
             this.videoGroupBox.Controls.Add(this.VideoBox_staticPicture);
             this.videoGroupBox.Location = new System.Drawing.Point(110, 13);
             this.videoGroupBox.Name = "videoGroupBox";
-            this.videoGroupBox.Size = new System.Drawing.Size(619, 366);
+            this.videoGroupBox.Size = new System.Drawing.Size(619, 418);
             this.videoGroupBox.TabIndex = 3;
             this.videoGroupBox.TabStop = false;
             this.videoGroupBox.Text = "Video";
@@ -166,7 +173,7 @@
             this.endingBias.AutoSize = true;
             this.endingBias.Checked = true;
             this.endingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.endingBias.Location = new System.Drawing.Point(315, 341);
+            this.endingBias.Location = new System.Drawing.Point(315, 393);
             this.endingBias.Name = "endingBias";
             this.endingBias.Size = new System.Drawing.Size(79, 17);
             this.endingBias.TabIndex = 13;
@@ -180,7 +187,7 @@
             this.beginingBias.AutoSize = true;
             this.beginingBias.Checked = true;
             this.beginingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.beginingBias.Location = new System.Drawing.Point(151, 341);
+            this.beginingBias.Location = new System.Drawing.Point(151, 393);
             this.beginingBias.Name = "beginingBias";
             this.beginingBias.Size = new System.Drawing.Size(112, 17);
             this.beginingBias.TabIndex = 12;
@@ -192,7 +199,7 @@
             // 
             this.runAnalysisTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisTo.Enabled = false;
-            this.runAnalysisTo.Location = new System.Drawing.Point(269, 340);
+            this.runAnalysisTo.Location = new System.Drawing.Point(269, 392);
             this.runAnalysisTo.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -209,7 +216,7 @@
             // 
             this.runAnalysisFrom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisFrom.Enabled = false;
-            this.runAnalysisFrom.Location = new System.Drawing.Point(105, 340);
+            this.runAnalysisFrom.Location = new System.Drawing.Point(105, 392);
             this.runAnalysisFrom.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -225,7 +232,7 @@
             // actualIndex
             // 
             this.actualIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.actualIndex.Location = new System.Drawing.Point(59, 340);
+            this.actualIndex.Location = new System.Drawing.Point(59, 392);
             this.actualIndex.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -242,7 +249,7 @@
             // 
             this.videoSlider.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.videoSlider.Location = new System.Drawing.Point(6, 289);
+            this.videoSlider.Location = new System.Drawing.Point(6, 341);
             this.videoSlider.Maximum = 100;
             this.videoSlider.Name = "videoSlider";
             this.videoSlider.Size = new System.Drawing.Size(608, 45);
@@ -252,7 +259,7 @@
             // StopStartButton
             // 
             this.StopStartButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.StopStartButton.Location = new System.Drawing.Point(6, 340);
+            this.StopStartButton.Location = new System.Drawing.Point(6, 392);
             this.StopStartButton.Name = "StopStartButton";
             this.StopStartButton.Size = new System.Drawing.Size(47, 20);
             this.StopStartButton.TabIndex = 6;
@@ -265,25 +272,67 @@
             this.VideoBox_processedPicture.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.VideoBox_processedPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.VideoBox_processedPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
             this.VideoBox_processedPicture.Location = new System.Drawing.Point(312, 19);
             this.VideoBox_processedPicture.Name = "VideoBox_processedPicture";
-            this.VideoBox_processedPicture.Size = new System.Drawing.Size(300, 250);
+            this.VideoBox_processedPicture.Size = new System.Drawing.Size(300, 302);
             this.VideoBox_processedPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.VideoBox_processedPicture.TabIndex = 1;
             this.VideoBox_processedPicture.TabStop = false;
-            this.VideoBox_processedPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.VideoBox_MouseClick);
+            this.VideoBox_processedPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
+            this.VideoBox_processedPicture.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DrawNewPoint);
+            this.VideoBox_processedPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
+            this.VideoBox_processedPicture.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DrawEnd);
+            // 
+            // MaskContextMenuStrip1
+            // 
+            this.MaskContextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.applyMaskToolStripMenuItem,
+            this.MaskCIrcle,
+            this.MaskRectangle,
+            this.drawCurveToolStripMenuItem});
+            this.MaskContextMenuStrip1.Name = "contextMenuStrip1";
+            this.MaskContextMenuStrip1.Size = new System.Drawing.Size(154, 92);
+            this.MaskContextMenuStrip1.Text = "Set mask";
+            // 
+            // MaskCIrcle
+            // 
+            this.MaskCIrcle.Name = "MaskCIrcle";
+            this.MaskCIrcle.Size = new System.Drawing.Size(153, 22);
+            this.MaskCIrcle.Text = "Draw circle";
+            this.MaskCIrcle.Click += new System.EventHandler(this.StartDrawEllipse);
+            // 
+            // MaskRectangle
+            // 
+            this.MaskRectangle.Name = "MaskRectangle";
+            this.MaskRectangle.Size = new System.Drawing.Size(153, 22);
+            this.MaskRectangle.Text = "Draw rectangle";
+            this.MaskRectangle.Click += new System.EventHandler(this.StartDrawRectangle);
+            // 
+            // drawCurveToolStripMenuItem
+            // 
+            this.drawCurveToolStripMenuItem.Enabled = false;
+            this.drawCurveToolStripMenuItem.Name = "drawCurveToolStripMenuItem";
+            this.drawCurveToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.drawCurveToolStripMenuItem.Text = "Draw curve";
+            this.drawCurveToolStripMenuItem.Click += new System.EventHandler(this.StartDrawCurve);
             // 
             // VideoBox_staticPicture
             // 
             this.VideoBox_staticPicture.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.VideoBox_staticPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.VideoBox_staticPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
             this.VideoBox_staticPicture.Location = new System.Drawing.Point(6, 19);
             this.VideoBox_staticPicture.Name = "VideoBox_staticPicture";
-            this.VideoBox_staticPicture.Size = new System.Drawing.Size(300, 250);
+            this.VideoBox_staticPicture.Size = new System.Drawing.Size(300, 302);
             this.VideoBox_staticPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.VideoBox_staticPicture.TabIndex = 8;
             this.VideoBox_staticPicture.TabStop = false;
+            this.VideoBox_staticPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
+            this.VideoBox_staticPicture.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DrawNewPoint);
+            this.VideoBox_staticPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
+            this.VideoBox_staticPicture.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DrawEnd);
             // 
             // controlGroupBox
             // 
@@ -292,7 +341,7 @@
             this.controlGroupBox.Controls.Add(this.invertCheckBox);
             this.controlGroupBox.Location = new System.Drawing.Point(12, 13);
             this.controlGroupBox.Name = "controlGroupBox";
-            this.controlGroupBox.Size = new System.Drawing.Size(92, 128);
+            this.controlGroupBox.Size = new System.Drawing.Size(92, 118);
             this.controlGroupBox.TabIndex = 7;
             this.controlGroupBox.TabStop = false;
             this.controlGroupBox.Text = "Controls";
@@ -349,11 +398,18 @@
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
             // 
+            // applyMaskToolStripMenuItem
+            // 
+            this.applyMaskToolStripMenuItem.Name = "applyMaskToolStripMenuItem";
+            this.applyMaskToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.applyMaskToolStripMenuItem.Text = "Apply mask";
+            this.applyMaskToolStripMenuItem.Click += new System.EventHandler(this.applyMaskToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(736, 435);
+            this.ClientSize = new System.Drawing.Size(736, 487);
             this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.mainMenuStrip);
@@ -372,6 +428,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.videoSlider)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox_processedPicture)).EndInit();
+            this.MaskContextMenuStrip1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox_staticPicture)).EndInit();
             this.controlGroupBox.ResumeLayout(false);
             this.controlGroupBox.PerformLayout();
@@ -408,6 +465,11 @@
         private System.Windows.Forms.CheckBox beginingBias;
         private System.Windows.Forms.NumericUpDown runAnalysisTo;
         private System.Windows.Forms.NumericUpDown runAnalysisFrom;
+        private System.Windows.Forms.ContextMenuStrip MaskContextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem MaskCIrcle;
+        private System.Windows.Forms.ToolStripMenuItem MaskRectangle;
+        private System.Windows.Forms.ToolStripMenuItem drawCurveToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem applyMaskToolStripMenuItem;
     }
 }
 

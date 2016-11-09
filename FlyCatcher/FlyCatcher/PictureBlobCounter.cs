@@ -23,19 +23,6 @@ namespace FlyCatcher
         int upperBound { get { return owner.upperBoundValue; } }
         int lowerBound { get { return owner.lowerBoundValue; } }
 
-        Color backGroundThreshold
-        {
-            get
-            {
-                return Color.FromArgb(
-                       (owner.backgroundColor.A + owner.flyColor.A) / 2,
-                       (owner.backgroundColor.R + owner.flyColor.R) / 2,
-                       (owner.backgroundColor.G + owner.flyColor.G) / 2,
-                       (owner.backgroundColor.B + owner.flyColor.B) / 2
-                       );
-            }
-        }
-
         public PictureBlobCounter(MainForm owner)
         {
             this.owner = owner;
@@ -44,6 +31,7 @@ namespace FlyCatcher
             //blobCounter.BlobsFilter
             blobCounter.CoupledSizeFiltering = true;//TODO: do not know what this do
             blobCounter.FilterBlobs = true;
+            blobCounter.BackgroundThreshold = Color.Gray;
         }
 
         public ICollection<Blob> CountItems(Bitmap image)
@@ -51,7 +39,7 @@ namespace FlyCatcher
             blobCounter.MaxHeight = blobCounter.MaxWidth = upperBound;
             blobCounter.MinHeight = blobCounter.MinWidth = lowerBound;            
 
-            blobCounter.BackgroundThreshold = backGroundThreshold;
+            
 
             blobCounter.ProcessImage(image);
 
