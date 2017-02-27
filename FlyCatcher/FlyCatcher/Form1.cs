@@ -49,7 +49,7 @@ namespace FlyCatcher
             pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", "jpg", 5, 600);
             pictureProcessor = new BitmapPreProcessor(this);
             blobCounter = new PictureBlobCounter(this);
-            maskContainer = new MaskContainer(pictureGiver.First.Width, pictureGiver.First.Height, 255);
+            maskContainer = new MaskContainer(pictureGiver.First.Width, pictureGiver.First.Height, 0);
             
             refreshActualFrame();
         }
@@ -71,7 +71,8 @@ namespace FlyCatcher
             Bitmap rawIamge = image;
             Bitmap processedImage = processImage(rawIamge);
 
-            ICollection<Blob> blobs = blobCounter.CountItems(processedImage);
+            IDictionary<string, Blob> blobsWithTags = blobCounter.CountItems(processedImage);
+            ICollection<Blob> blobs = blobsWithTags.Values;
 
             highlightFlies(VideoBox_processedPicture, processedImage, blobs);
             highlightFlies(VideoBox_staticPicture, rawIamge, blobs);
@@ -211,55 +212,23 @@ namespace FlyCatcher
 
         enum DrawStyle { None, Ellipse, Rectangle, Curve };
         DrawStyle actualStyle = DrawStyle.None;
-        bool validPoint = false;
+        bool isOkayToDraw() { return actualStyle != DrawStyle.None; }
         int tmpX, tmpY;
         Rectangle drawRectangle;
-
-        private void applyMaskToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            switch (actualStyle)
-            {
-                case DrawStyle.Curve:
-                    //TODO: curve doesn't work well
-                    //e.Graphics.DrawClosedCurve(maskHighliter, Points);
-                    break;
-                case DrawStyle.Ellipse:
-                    //Ellipse doesn't work with mask container
-                    break;
-                case DrawStyle.Rectangle:
-                    maskContainer += drawRectangle;
-                    break;
-                case DrawStyle.None:
-                default:
-                    break;
-            }
-
-            drawRectangle = new Rectangle();
-            refreshActualFrame();
-        }
+        //TOOD: get radius or dimensionsfrom user
+        float halfWidth = 10;
+        float halfHeight = 10;
 
         private void Draw(object sender, MouseEventArgs e)
         {
-            if (validPoint)
+            if (isOkayToDraw())
             {
-                drawRectangle = MathFunctions.getRectangle(tmpX, tmpY, e.X, e.Y);
+                drawRectangle = new Rectangle(e.X - halfwidth);
+                //drawRectangle = MathFunctions.getRectangle(tmpX, tmpY, Math.Min(Math.Max(e.X,0), VideoBox_staticPicture.Width), Math.Min(Math.Max(e.Y, 0), VideoBox_staticPicture.Width));
                 Refresh();
             }
-        }
-
-        private void DrawNewPoint(object sender, MouseEventArgs e)
-        {
-            tmpX = e.X;
-            tmpY = e.Y;
-            validPoint = true;
-        }
-
-        private void DrawEnd(object sender, MouseEventArgs e)
-        {
-            validPoint = false;
-            //points.Add(new System.Drawing.Point(e.X, e.Y));
-        }
-
+        }        
+        
         private void VideoBox_Paint(object sender, PaintEventArgs e)
         {
             switch (actualStyle)
@@ -290,7 +259,43 @@ namespace FlyCatcher
             actualStyle = DrawStyle.Rectangle;
         }
 
-        //Todo: curve
+        private void applyMask(object sender, MouseEventArgs e)
+        {
+            if (actualStyle == DrawStyle.None)
+                return;
+
+            Extensions.isInCurve containFunction;
+            //TOOD: proportionally recalculate the rectangle
+            drawRectangle = MathFunctions.recalculateRectangle(drawRectangle, VideoBox_staticPicture.Width, VideoBox_staticPicture.Height, VideoBox_staticPicture.Image.Width, VideoBox_staticPicture.Image.Height);
+            switch (actualStyle)
+            {
+                case DrawStyle.Curve:
+                    //TODO: implement curve function
+                    //containFunction = ???
+                    break;
+                case DrawStyle.Ellipse:
+                    //TODO: implement curve function
+                    //containFunction = ???
+                    break;
+                case DrawStyle.Rectangle:
+                    containFunction = point =>
+                                        point.X >= drawRectangle.X &&
+                                        point.X <= drawRectangle.X + drawRectangle.Width &&
+                                        point.Y >= drawRectangle.Y &&
+                                        point.Y >= drawRectangle.Y + drawRectangle.Height;
+                    break;
+                case DrawStyle.None:
+                default:
+                    break;
+            }
+
+            blobCounter.Masks.Add(new CurveMask(point => true, "m"));
+
+            drawRectangle = new Rectangle();
+            refreshActualFrame();
+        }
+
+        //TODO: curve
         private void StartDrawCurve(object sender, EventArgs e)
         {
             actualStyle = DrawStyle.Curve;

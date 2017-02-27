@@ -48,6 +48,7 @@
             this.StopStartButton = new System.Windows.Forms.Button();
             this.VideoBox_processedPicture = new System.Windows.Forms.PictureBox();
             this.MaskContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.applyMaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MaskCIrcle = new System.Windows.Forms.ToolStripMenuItem();
             this.MaskRectangle = new System.Windows.Forms.ToolStripMenuItem();
             this.drawCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,7 +58,6 @@
             this.lowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.applyMaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
@@ -279,10 +279,8 @@
             this.VideoBox_processedPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.VideoBox_processedPicture.TabIndex = 1;
             this.VideoBox_processedPicture.TabStop = false;
-            this.VideoBox_processedPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
-            this.VideoBox_processedPicture.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DrawNewPoint);
+            this.VideoBox_processedPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);            
             this.VideoBox_processedPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
-            this.VideoBox_processedPicture.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DrawEnd);
             // 
             // MaskContextMenuStrip1
             // 
@@ -294,6 +292,12 @@
             this.MaskContextMenuStrip1.Name = "contextMenuStrip1";
             this.MaskContextMenuStrip1.Size = new System.Drawing.Size(154, 92);
             this.MaskContextMenuStrip1.Text = "Set mask";
+            // 
+            // applyMaskToolStripMenuItem
+            // 
+            this.applyMaskToolStripMenuItem.Name = "applyMaskToolStripMenuItem";
+            this.applyMaskToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.applyMaskToolStripMenuItem.Text = "Apply mask";
             // 
             // MaskCIrcle
             // 
@@ -330,9 +334,8 @@
             this.VideoBox_staticPicture.TabIndex = 8;
             this.VideoBox_staticPicture.TabStop = false;
             this.VideoBox_staticPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
-            this.VideoBox_staticPicture.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DrawNewPoint);
-            this.VideoBox_staticPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
-            this.VideoBox_staticPicture.MouseUp += new System.Windows.Forms.MouseEventHandler(this.DrawEnd);
+            this.VideoBox_staticPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.applyMask);
+            this.VideoBox_staticPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);           
             // 
             // controlGroupBox
             // 
@@ -397,13 +400,6 @@
             // 
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
-            // 
-            // applyMaskToolStripMenuItem
-            // 
-            this.applyMaskToolStripMenuItem.Name = "applyMaskToolStripMenuItem";
-            this.applyMaskToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
-            this.applyMaskToolStripMenuItem.Text = "Apply mask";
-            this.applyMaskToolStripMenuItem.Click += new System.EventHandler(this.applyMaskToolStripMenuItem_Click);
             // 
             // MainForm
             // 

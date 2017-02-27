@@ -18,6 +18,23 @@ namespace FlyCatcher
         public static int getActual(double min, double max, double percent)
         { return (int)Math.Floor(min + ((percent / 100) * (max - min))); }
 
+        public static Rectangle recalculateRectangle(Rectangle rect, double actualWidth, double actualHeight, double desiredWidth, double desiredHeight)
+        {
+            double biasWidth = desiredWidth /actualWidth;
+            double biasHeight = desiredHeight / actualHeight;
+            return new Rectangle((int)Math.Floor(rect.Left * biasWidth), (int)Math.Floor(rect.Top * biasHeight),(int)Math.Floor(rect.Width * biasWidth), (int)Math.Floor(rect.Height * biasHeight));
+        }
+
+        public static Rectangle getRectangleFromRadius(Point center, int width, int height)
+        {
+            return getRectangleFromRadius(center.X, center.Y, width, height);
+        }
+
+        public static Rectangle getRectangleFromRadius(int X, int Y, int width, int height)
+        {
+            return getRectangle(X + width, Y + height, X - width, Y - height);
+        }
+
         public static Rectangle getRectangle(int x1, int y1, int x2, int y2)
         {
             return new Rectangle(Math.Min(x1, x2), Math.Min(y1, y2), Math.Abs(x1 - x2), Math.Abs(y1 - y2));
@@ -99,6 +116,8 @@ namespace FlyCatcher
                 picture.UnlockBits(data);
             }
         }
+
+        public delegate bool isInCurve(AForge.Point point);
     }
 }
 
