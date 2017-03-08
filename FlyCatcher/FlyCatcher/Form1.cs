@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Linq;
 
 using System.Diagnostics;
 using System.IO;
@@ -71,8 +72,8 @@ namespace FlyCatcher
             Bitmap rawIamge = image;
             Bitmap processedImage = processImage(rawIamge);
 
-            IDictionary<string, Blob> blobsWithTags = blobCounter.CountItems(processedImage);
-            ICollection<Blob> blobs = blobsWithTags.Values;
+            IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
+            IEnumerable<Blob> blobs = from blobWithTag in blobsWithTags select blobWithTag.Item2;
 
             highlightFlies(VideoBox_processedPicture, processedImage, blobs);
             highlightFlies(VideoBox_staticPicture, rawIamge, blobs);
@@ -86,7 +87,8 @@ namespace FlyCatcher
             return pictureProcessor.processImage(image);
         }
 
-        void highlightFlies(PictureBox pictureBox, Bitmap image, ICollection<Blob> rects)
+        //TODO: hide the draw methods of blobs into BlobData
+        void highlightFlies(PictureBox pictureBox, Bitmap image, IEnumerable<Blob> rects)
         {
             pictureBox.BackgroundImage = image;
             pictureBox.Image = new Bitmap(image.Width, image.Height);
@@ -94,10 +96,7 @@ namespace FlyCatcher
 
             foreach (var rect in rects)
                 gr.DrawEllipse(blobHighliter, rect.Rectangle);
-
-        }
-
-
+        }        
 
         bool running = false;
         private void StopStartButton_Click(object sender, EventArgs e)
@@ -209,32 +208,101 @@ namespace FlyCatcher
                 runAnalysisTo.Value = runAnalysisFrom.Value;
         }
 
+        #region Masking
 
         enum DrawStyle { None, Ellipse, Rectangle, Curve };
         DrawStyle actualStyle = DrawStyle.None;
         bool isOkayToDraw() { return actualStyle != DrawStyle.None; }
-        int tmpX, tmpY;
+        string maskTag() { return maskTagBox.Text; }
         Rectangle drawRectangle;
         //TOOD: get radius or dimensionsfrom user
         float halfWidth = 10;
         float halfHeight = 10;
+        float wheelCorrection = 120;
+        delegate void drawEvent();
 
-        private void Draw(object sender, MouseEventArgs e)
+        private void maskingEventHandler(drawEvent ev)
         {
             if (isOkayToDraw())
             {
-                drawRectangle = new Rectangle(e.X - halfwidth);
-                //drawRectangle = MathFunctions.getRectangle(tmpX, tmpY, Math.Min(Math.Max(e.X,0), VideoBox_staticPicture.Width), Math.Min(Math.Max(e.Y, 0), VideoBox_staticPicture.Width));
+                ev();
+                
                 Refresh();
             }
-        }        
-        
+        }
+
+        private void Draw(object sender, MouseEventArgs e)
+        {
+            maskingEventHandler(() => drawRectangle = MathFunctions.getRectangleFromRadius(e.Location, halfWidth, halfHeight));
+        }
+
+        private void ChangeDimensions(object sender, MouseEventArgs e)
+        {
+            maskingEventHandler(() =>
+            {
+                halfWidth =
+                    Math.Min(
+                        Math.Max(
+                            halfWidth + e.Delta / wheelCorrection, 1),
+                        VideoBox_processedPicture.Width / 2);
+                halfHeight =
+                    Math.Min(
+                        Math.Max(
+                            halfHeight + e.Delta / wheelCorrection, 1),
+                        VideoBox_processedPicture.Height / 2);
+            });
+        }
+
+        private void applyMask(object sender, MouseEventArgs e)
+        {
+            maskingEventHandler(() =>
+            {
+                CurveMask mask = null;
+                Rectangle boundaryRectangle = MathFunctions.recalculateRectangle(drawRectangle, VideoBox_staticPicture.Width, VideoBox_staticPicture.Height, VideoBox_staticPicture.Image.Width, VideoBox_staticPicture.Image.Height);
+
+                //Debug: rectangle draw around mask that has just been addeded
+                Graphics gr = Graphics.FromImage(VideoBox_processedPicture.Image);
+                gr.DrawRectangle(Pens.BurlyWood, boundaryRectangle);
+                gr.Dispose();
+                Refresh();
+
+                switch (actualStyle)
+                {
+                    case DrawStyle.Curve:
+                        //TODO: implement curve function
+                        //containFunction = ???
+                        break;
+                    case DrawStyle.Ellipse:
+                        mask = new EllipMask(boundaryRectangle, drawRectangle, maskTag());
+                        break;
+                    case DrawStyle.Rectangle:
+                        mask = new RectMask(boundaryRectangle, drawRectangle, maskTag());
+                        break;
+                    //because of 'isOkayToDraw' testing, this part of switch ought to never occur,
+                    //therefore 'containFunction' should be assigned properly
+                    case DrawStyle.None:
+                    default:
+                        break;
+                }
+
+                //TODO: tag name of the mask
+                 
+                blobCounter.Masks.Add(mask);
+                maskControlContainer.Items.Add(mask);
+            });
+            
+            refreshActualFrame();
+        }
+
         private void VideoBox_Paint(object sender, PaintEventArgs e)
         {
+            foreach (var mask in maskControlContainer.SelectedItems)
+                ((CurveMask)mask).drawMask(e.Graphics);
+
             switch (actualStyle)
             {
                 case DrawStyle.Curve:
-                    //TODO: curve doesn't work well
+                    //TODO: curve doesn't work
                     //e.Graphics.DrawClosedCurve(maskHighliter, Points);
                     break;
                 case DrawStyle.Ellipse:
@@ -249,6 +317,12 @@ namespace FlyCatcher
             }
         }
 
+        private void StopMasking(object sender, EventArgs e)
+        {
+            actualStyle = DrawStyle.None;
+            Refresh();
+        }
+
         private void StartDrawEllipse(object sender, EventArgs e)
         {
             actualStyle = DrawStyle.Ellipse;
@@ -259,46 +333,17 @@ namespace FlyCatcher
             actualStyle = DrawStyle.Rectangle;
         }
 
-        private void applyMask(object sender, MouseEventArgs e)
-        {
-            if (actualStyle == DrawStyle.None)
-                return;
-
-            Extensions.isInCurve containFunction;
-            //TOOD: proportionally recalculate the rectangle
-            drawRectangle = MathFunctions.recalculateRectangle(drawRectangle, VideoBox_staticPicture.Width, VideoBox_staticPicture.Height, VideoBox_staticPicture.Image.Width, VideoBox_staticPicture.Image.Height);
-            switch (actualStyle)
-            {
-                case DrawStyle.Curve:
-                    //TODO: implement curve function
-                    //containFunction = ???
-                    break;
-                case DrawStyle.Ellipse:
-                    //TODO: implement curve function
-                    //containFunction = ???
-                    break;
-                case DrawStyle.Rectangle:
-                    containFunction = point =>
-                                        point.X >= drawRectangle.X &&
-                                        point.X <= drawRectangle.X + drawRectangle.Width &&
-                                        point.Y >= drawRectangle.Y &&
-                                        point.Y >= drawRectangle.Y + drawRectangle.Height;
-                    break;
-                case DrawStyle.None:
-                default:
-                    break;
-            }
-
-            blobCounter.Masks.Add(new CurveMask(point => true, "m"));
-
-            drawRectangle = new Rectangle();
-            refreshActualFrame();
-        }
-
         //TODO: curve
         private void StartDrawCurve(object sender, EventArgs e)
         {
             actualStyle = DrawStyle.Curve;
         }
+
+        private void displayMask(object sender, EventArgs e)
+        {
+            Refresh();            
+        }
+
+        #endregion
     }
 }

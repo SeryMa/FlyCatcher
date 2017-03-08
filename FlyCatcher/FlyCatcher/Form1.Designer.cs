@@ -38,6 +38,8 @@
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.fpsLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
+            this.maskGroupBox = new System.Windows.Forms.GroupBox();
+            this.maskControlContainer = new System.Windows.Forms.ListBox();
             this.videoGroupBox = new System.Windows.Forms.GroupBox();
             this.endingBias = new System.Windows.Forms.CheckBox();
             this.beginingBias = new System.Windows.Forms.CheckBox();
@@ -58,9 +60,11 @@
             this.lowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.maskTagBox = new System.Windows.Forms.TextBox();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
+            this.maskGroupBox.SuspendLayout();
             this.videoGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisFrom)).BeginInit();
@@ -80,7 +84,7 @@
             this.fileToolStripMenuItem});
             this.mainMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.mainMenuStrip.Name = "mainMenuStrip";
-            this.mainMenuStrip.Size = new System.Drawing.Size(736, 24);
+            this.mainMenuStrip.Size = new System.Drawing.Size(928, 24);
             this.mainMenuStrip.TabIndex = 0;
             this.mainMenuStrip.Text = "menuStrip1";
             // 
@@ -122,28 +126,52 @@
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fpsLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 465);
+            this.statusStrip.Location = new System.Drawing.Point(0, 508);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(736, 22);
+            this.statusStrip.Size = new System.Drawing.Size(928, 22);
             this.statusStrip.TabIndex = 1;
             this.statusStrip.Text = "statusStrip1";
             // 
             // fpsLabel
             // 
             this.fpsLabel.Name = "fpsLabel";
-            this.fpsLabel.Size = new System.Drawing.Size(721, 17);
+            this.fpsLabel.Size = new System.Drawing.Size(913, 17);
             this.fpsLabel.Spring = true;
             this.fpsLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // mainPanel
             // 
+            this.mainPanel.Controls.Add(this.maskGroupBox);
             this.mainPanel.Controls.Add(this.videoGroupBox);
             this.mainPanel.Controls.Add(this.controlGroupBox);
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(0, 24);
             this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Size = new System.Drawing.Size(736, 441);
+            this.mainPanel.Size = new System.Drawing.Size(928, 484);
             this.mainPanel.TabIndex = 2;
+            // 
+            // maskGroupBox
+            // 
+            this.maskGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.maskGroupBox.Controls.Add(this.maskTagBox);
+            this.maskGroupBox.Controls.Add(this.maskControlContainer);
+            this.maskGroupBox.Location = new System.Drawing.Point(764, 13);
+            this.maskGroupBox.Name = "maskGroupBox";
+            this.maskGroupBox.Size = new System.Drawing.Size(152, 461);
+            this.maskGroupBox.TabIndex = 8;
+            this.maskGroupBox.TabStop = false;
+            this.maskGroupBox.Text = "Masks";
+            // 
+            // maskControlContainer
+            // 
+            this.maskControlContainer.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.maskControlContainer.FormattingEnabled = true;
+            this.maskControlContainer.Location = new System.Drawing.Point(3, 38);
+            this.maskControlContainer.Name = "maskControlContainer";
+            this.maskControlContainer.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
+            this.maskControlContainer.Size = new System.Drawing.Size(146, 420);
+            this.maskControlContainer.TabIndex = 0;
+            this.maskControlContainer.SelectedIndexChanged += new System.EventHandler(this.displayMask);
             // 
             // videoGroupBox
             // 
@@ -162,7 +190,7 @@
             this.videoGroupBox.Controls.Add(this.VideoBox_staticPicture);
             this.videoGroupBox.Location = new System.Drawing.Point(110, 13);
             this.videoGroupBox.Name = "videoGroupBox";
-            this.videoGroupBox.Size = new System.Drawing.Size(619, 418);
+            this.videoGroupBox.Size = new System.Drawing.Size(648, 461);
             this.videoGroupBox.TabIndex = 3;
             this.videoGroupBox.TabStop = false;
             this.videoGroupBox.Text = "Video";
@@ -173,7 +201,7 @@
             this.endingBias.AutoSize = true;
             this.endingBias.Checked = true;
             this.endingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.endingBias.Location = new System.Drawing.Point(315, 393);
+            this.endingBias.Location = new System.Drawing.Point(315, 436);
             this.endingBias.Name = "endingBias";
             this.endingBias.Size = new System.Drawing.Size(79, 17);
             this.endingBias.TabIndex = 13;
@@ -187,7 +215,7 @@
             this.beginingBias.AutoSize = true;
             this.beginingBias.Checked = true;
             this.beginingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.beginingBias.Location = new System.Drawing.Point(151, 393);
+            this.beginingBias.Location = new System.Drawing.Point(151, 436);
             this.beginingBias.Name = "beginingBias";
             this.beginingBias.Size = new System.Drawing.Size(112, 17);
             this.beginingBias.TabIndex = 12;
@@ -199,7 +227,7 @@
             // 
             this.runAnalysisTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisTo.Enabled = false;
-            this.runAnalysisTo.Location = new System.Drawing.Point(269, 392);
+            this.runAnalysisTo.Location = new System.Drawing.Point(269, 435);
             this.runAnalysisTo.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -216,7 +244,7 @@
             // 
             this.runAnalysisFrom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisFrom.Enabled = false;
-            this.runAnalysisFrom.Location = new System.Drawing.Point(105, 392);
+            this.runAnalysisFrom.Location = new System.Drawing.Point(105, 435);
             this.runAnalysisFrom.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -232,7 +260,7 @@
             // actualIndex
             // 
             this.actualIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.actualIndex.Location = new System.Drawing.Point(59, 392);
+            this.actualIndex.Location = new System.Drawing.Point(59, 435);
             this.actualIndex.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -249,17 +277,17 @@
             // 
             this.videoSlider.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.videoSlider.Location = new System.Drawing.Point(6, 341);
+            this.videoSlider.Location = new System.Drawing.Point(6, 384);
             this.videoSlider.Maximum = 100;
             this.videoSlider.Name = "videoSlider";
-            this.videoSlider.Size = new System.Drawing.Size(608, 45);
+            this.videoSlider.Size = new System.Drawing.Size(637, 45);
             this.videoSlider.TabIndex = 8;
             this.videoSlider.Scroll += new System.EventHandler(this.videoSlider_Scroll);
             // 
             // StopStartButton
             // 
             this.StopStartButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.StopStartButton.Location = new System.Drawing.Point(6, 392);
+            this.StopStartButton.Location = new System.Drawing.Point(6, 435);
             this.StopStartButton.Name = "StopStartButton";
             this.StopStartButton.Size = new System.Drawing.Size(47, 20);
             this.StopStartButton.TabIndex = 6;
@@ -271,16 +299,18 @@
             // 
             this.VideoBox_processedPicture.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.VideoBox_processedPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.VideoBox_processedPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.VideoBox_processedPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
-            this.VideoBox_processedPicture.Location = new System.Drawing.Point(312, 19);
+            this.VideoBox_processedPicture.Location = new System.Drawing.Point(341, 19);
             this.VideoBox_processedPicture.Name = "VideoBox_processedPicture";
             this.VideoBox_processedPicture.Size = new System.Drawing.Size(300, 302);
-            this.VideoBox_processedPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.VideoBox_processedPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.VideoBox_processedPicture.TabIndex = 1;
             this.VideoBox_processedPicture.TabStop = false;
-            this.VideoBox_processedPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);            
+            this.VideoBox_processedPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
+            this.VideoBox_processedPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.applyMask);
             this.VideoBox_processedPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
+            this.VideoBox_processedPicture.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ChangeDimensions);
             // 
             // MaskContextMenuStrip1
             // 
@@ -297,7 +327,8 @@
             // 
             this.applyMaskToolStripMenuItem.Name = "applyMaskToolStripMenuItem";
             this.applyMaskToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
-            this.applyMaskToolStripMenuItem.Text = "Apply mask";
+            this.applyMaskToolStripMenuItem.Text = "Stop masking";
+            this.applyMaskToolStripMenuItem.Click += new System.EventHandler(this.StopMasking);
             // 
             // MaskCIrcle
             // 
@@ -325,17 +356,18 @@
             // 
             this.VideoBox_staticPicture.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.VideoBox_staticPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.VideoBox_staticPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.VideoBox_staticPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
             this.VideoBox_staticPicture.Location = new System.Drawing.Point(6, 19);
             this.VideoBox_staticPicture.Name = "VideoBox_staticPicture";
             this.VideoBox_staticPicture.Size = new System.Drawing.Size(300, 302);
-            this.VideoBox_staticPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.VideoBox_staticPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.VideoBox_staticPicture.TabIndex = 8;
             this.VideoBox_staticPicture.TabStop = false;
             this.VideoBox_staticPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
             this.VideoBox_staticPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.applyMask);
-            this.VideoBox_staticPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);           
+            this.VideoBox_staticPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
+            this.VideoBox_staticPicture.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ChangeDimensions);
             // 
             // controlGroupBox
             // 
@@ -401,11 +433,22 @@
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
             // 
+            // maskTagBox
+            // 
+            this.maskTagBox.AllowDrop = true;
+            this.maskTagBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.maskTagBox.Location = new System.Drawing.Point(3, 16);
+            this.maskTagBox.MaxLength = 255;
+            this.maskTagBox.Name = "maskTagBox";
+            this.maskTagBox.Size = new System.Drawing.Size(146, 20);
+            this.maskTagBox.TabIndex = 1;
+            this.maskTagBox.Text = "mask";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(736, 487);
+            this.ClientSize = new System.Drawing.Size(928, 530);
             this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.mainMenuStrip);
@@ -417,6 +460,8 @@
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.mainPanel.ResumeLayout(false);
+            this.maskGroupBox.ResumeLayout(false);
+            this.maskGroupBox.PerformLayout();
             this.videoGroupBox.ResumeLayout(false);
             this.videoGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisTo)).EndInit();
@@ -466,6 +511,9 @@
         private System.Windows.Forms.ToolStripMenuItem MaskRectangle;
         private System.Windows.Forms.ToolStripMenuItem drawCurveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem applyMaskToolStripMenuItem;
+        private System.Windows.Forms.GroupBox maskGroupBox;
+        private System.Windows.Forms.ListBox maskControlContainer;
+        private System.Windows.Forms.TextBox maskTagBox;
     }
 }
 

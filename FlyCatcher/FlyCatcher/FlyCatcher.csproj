@@ -134,6 +134,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlobContainer.cs" />
+    <Compile Include="BlobData.cs" />
     <Compile Include="BlobKeeper.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Form1.cs">

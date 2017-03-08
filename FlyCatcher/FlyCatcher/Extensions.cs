@@ -20,24 +20,24 @@ namespace FlyCatcher
 
         public static Rectangle recalculateRectangle(Rectangle rect, double actualWidth, double actualHeight, double desiredWidth, double desiredHeight)
         {
-            double biasWidth = desiredWidth /actualWidth;
+            double biasWidth = desiredWidth / actualWidth;
             double biasHeight = desiredHeight / actualHeight;
-            return new Rectangle((int)Math.Floor(rect.Left * biasWidth), (int)Math.Floor(rect.Top * biasHeight),(int)Math.Floor(rect.Width * biasWidth), (int)Math.Floor(rect.Height * biasHeight));
+            return new Rectangle((int)Math.Floor(rect.Left * biasWidth), (int)Math.Floor(rect.Top * biasHeight), (int)Math.Floor(rect.Width * biasWidth), (int)Math.Floor(rect.Height * biasHeight));
         }
 
-        public static Rectangle getRectangleFromRadius(Point center, int width, int height)
+        public static Rectangle getRectangleFromRadius(Point center, double halfWidth, double halfHeight)
         {
-            return getRectangleFromRadius(center.X, center.Y, width, height);
+            return getRectangleFromRadius(center.X, center.Y, halfWidth, halfHeight);
         }
 
-        public static Rectangle getRectangleFromRadius(int X, int Y, int width, int height)
+        public static Rectangle getRectangleFromRadius(double X, double Y, double halfWidth, double halfHeight)
         {
-            return getRectangle(X + width, Y + height, X - width, Y - height);
+            return getRectangle(X + halfWidth, Y + halfHeight, X - halfWidth, Y - halfHeight);
         }
 
-        public static Rectangle getRectangle(int x1, int y1, int x2, int y2)
+        public static Rectangle getRectangle(double x1, double y1, double x2, double y2)
         {
-            return new Rectangle(Math.Min(x1, x2), Math.Min(y1, y2), Math.Abs(x1 - x2), Math.Abs(y1 - y2));
+            return new Rectangle((int)Math.Min(x1, x2), (int)Math.Min(y1, y2), (int)Math.Abs(x1 - x2), (int)Math.Abs(y1 - y2));
         }
 
         public static Rectangle getRectangle(Point a, Point b)
@@ -45,9 +45,30 @@ namespace FlyCatcher
             return getRectangle(a.X, a.Y, b.X, b.Y);
         }
 
-        public static Rectangle getRectangle(Point p, int x, int y)
+        public static Rectangle getRectangle(Point p, double x, double y)
         {
             return getRectangle(p.X, p.Y, x, y);
+        }
+
+        public static bool isPointInEllipse(Point p, Rectangle rect)
+        {
+            return isPointInEllipse(p.X, p.Y, rect);
+        }
+
+        public static bool isPointInEllipse(AForge.Point p, Rectangle rect)
+        {
+            return isPointInEllipse(p.X, p.Y, rect);
+        }
+
+        public static bool isPointInEllipse(double x, double y, Rectangle rect)
+        {
+            Point center = rect.getCenter();
+            return (Math.Pow((x - center.X) / (rect.Width / 2), 2) + Math.Pow((y - center.Y) / (rect.Height / 2), 2)) <= 1;
+        }
+
+        public static Point getCenter(this Rectangle rect)
+        {
+            return new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
         }
 
         public static bool isPointInRectangle(Point p, Rectangle rect)
@@ -55,10 +76,56 @@ namespace FlyCatcher
             return isPointInRectangle(p.X, p.Y, rect);
         }
 
-        public static bool isPointInRectangle(int x, int y, Rectangle rect)
+        public static bool isPointInRectangle(AForge.Point p, Rectangle rect)
+        {
+            return isPointInRectangle(p.X, p.Y, rect);
+        }
+
+        public static bool isPointInRectangle(double x, double y, Rectangle rect)
         {
             return ((y >= rect.Left && y <= rect.Right) &&
                     (x >= rect.Top && x <= rect.Bottom));
+        }
+
+        public static double getDistance(this Point pointA, Point pointB)
+        {
+            return Math.Sqrt(
+                        Math.Pow(pointA.X - pointB.X, 2) +
+                        Math.Pow(pointA.Y - pointB.Y, 2)
+                     );
+        }
+
+        public static AForge.Point Normalize(this AForge.Point point)
+        {
+            AForge.Point newPoint = point;
+            newPoint.NormalizeInPlace();
+            return newPoint;
+        }
+
+        public static void NormalizeInPlace(this AForge.Point point)
+        {
+            float dist = point.EuclideanNorm();
+
+            point.X /= dist;
+            point.Y /= dist;
+        }
+
+        public static AForge.Point Multiply(this AForge.Point point, double coef)
+        {
+            AForge.Point newPoint = point;
+            newPoint.MultiplyInPlace(coef);
+            return newPoint;
+        }
+
+        public static void MultiplyInPlace(this AForge.Point point, float coef)
+        {
+            point.X *= coef;
+            point.Y *= coef;
+        }
+
+        public static void MultiplyInPlace(this AForge.Point point, double coef)
+        {
+            point.MultiplyInPlace((float)coef);
         }
     }
 
@@ -117,7 +184,35 @@ namespace FlyCatcher
             }
         }
 
+        public delegate T alter<T>(T item);
+        public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, alter<T> action)
+        {
+            return from item in source select action(item);            
+        }
+
+        public delegate T transform<out T, in U>(U item);
+        public static IEnumerable<T> ForEach<T, U>(this IEnumerable<U> souce, transform<T,U> action)
+        {
+            return from item in souce select action(item);
+        }
+
         public delegate bool isInCurve(AForge.Point point);
+
+        public static PointF Converse(this AForge.Point point)
+        {
+            return new PointF(point.X, point.Y);
+        }
+
+        public static AForge.Point Converse(this PointF point)
+        {
+            return new AForge.Point(point.X, point.Y);
+        }
+
+        public static AForge.Point Converse(this Point point)
+        {
+            return new AForge.Point(point.X, point.Y);
+        }
+
     }
 }
 
