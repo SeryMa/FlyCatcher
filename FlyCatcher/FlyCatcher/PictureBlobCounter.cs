@@ -31,7 +31,8 @@ namespace FlyCatcher
 
             blobCounter = new BlobCounter();
             Masks = new List<CurveMask>();
-            blobCounter.CoupledSizeFiltering = true;//TODO: I do not know what this do
+            //In coupled filtering mode, objects are filtered out in the case if their width is smaller than MinWidth and height is smaller than MinHeight.
+            blobCounter.CoupledSizeFiltering = true;
             blobCounter.FilterBlobs = true;
             blobCounter.BackgroundThreshold = Color.Gray;
         }

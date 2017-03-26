@@ -39,6 +39,7 @@
             this.fpsLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
             this.maskGroupBox = new System.Windows.Forms.GroupBox();
+            this.maskTagBox = new System.Windows.Forms.TextBox();
             this.maskControlContainer = new System.Windows.Forms.ListBox();
             this.videoGroupBox = new System.Windows.Forms.GroupBox();
             this.endingBias = new System.Windows.Forms.CheckBox();
@@ -56,11 +57,14 @@
             this.drawCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.VideoBox_staticPicture = new System.Windows.Forms.PictureBox();
             this.controlGroupBox = new System.Windows.Forms.GroupBox();
-            this.upperBound = new System.Windows.Forms.NumericUpDown();
-            this.lowerBound = new System.Windows.Forms.NumericUpDown();
+            this.label2 = new System.Windows.Forms.Label();
+            this.maskHeight = new System.Windows.Forms.NumericUpDown();
+            this.maskWidth = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
+            this.blobUpperBound = new System.Windows.Forms.NumericUpDown();
+            this.blobLowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.maskTagBox = new System.Windows.Forms.TextBox();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
@@ -74,8 +78,10 @@
             this.MaskContextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox_staticPicture)).BeginInit();
             this.controlGroupBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.upperBound)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.lowerBound)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maskHeight)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maskWidth)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.blobUpperBound)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.blobLowerBound)).BeginInit();
             this.SuspendLayout();
             // 
             // mainMenuStrip
@@ -161,6 +167,17 @@
             this.maskGroupBox.TabIndex = 8;
             this.maskGroupBox.TabStop = false;
             this.maskGroupBox.Text = "Masks";
+            // 
+            // maskTagBox
+            // 
+            this.maskTagBox.AllowDrop = true;
+            this.maskTagBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.maskTagBox.Location = new System.Drawing.Point(3, 16);
+            this.maskTagBox.MaxLength = 255;
+            this.maskTagBox.Name = "maskTagBox";
+            this.maskTagBox.Size = new System.Drawing.Size(146, 20);
+            this.maskTagBox.TabIndex = 1;
+            this.maskTagBox.Text = "mask";
             // 
             // maskControlContainer
             // 
@@ -297,7 +314,8 @@
             // 
             // VideoBox_processedPicture
             // 
-            this.VideoBox_processedPicture.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.VideoBox_processedPicture.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.VideoBox_processedPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.VideoBox_processedPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
@@ -354,8 +372,9 @@
             // 
             // VideoBox_staticPicture
             // 
-            this.VideoBox_staticPicture.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.VideoBox_staticPicture.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.VideoBox_staticPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.VideoBox_staticPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
             this.VideoBox_staticPicture.Location = new System.Drawing.Point(6, 19);
@@ -371,51 +390,107 @@
             // 
             // controlGroupBox
             // 
-            this.controlGroupBox.Controls.Add(this.upperBound);
-            this.controlGroupBox.Controls.Add(this.lowerBound);
+            this.controlGroupBox.Controls.Add(this.label2);
+            this.controlGroupBox.Controls.Add(this.maskHeight);
+            this.controlGroupBox.Controls.Add(this.maskWidth);
+            this.controlGroupBox.Controls.Add(this.label1);
+            this.controlGroupBox.Controls.Add(this.blobUpperBound);
+            this.controlGroupBox.Controls.Add(this.blobLowerBound);
             this.controlGroupBox.Controls.Add(this.invertCheckBox);
             this.controlGroupBox.Location = new System.Drawing.Point(12, 13);
             this.controlGroupBox.Name = "controlGroupBox";
-            this.controlGroupBox.Size = new System.Drawing.Size(92, 118);
+            this.controlGroupBox.Size = new System.Drawing.Size(92, 220);
             this.controlGroupBox.TabIndex = 7;
             this.controlGroupBox.TabStop = false;
             this.controlGroupBox.Text = "Controls";
             // 
-            // upperBound
+            // label2
             // 
-            this.upperBound.Location = new System.Drawing.Point(6, 42);
-            this.upperBound.Maximum = new decimal(new int[] {
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 104);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(57, 13);
+            this.label2.TabIndex = 9;
+            this.label2.Text = "Mask size:";
+            // 
+            // maskHeight
+            // 
+            this.maskHeight.Location = new System.Drawing.Point(6, 120);
+            this.maskHeight.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
-            this.upperBound.Name = "upperBound";
-            this.upperBound.Size = new System.Drawing.Size(41, 20);
-            this.upperBound.TabIndex = 2;
-            this.upperBound.Value = new decimal(new int[] {
+            this.maskHeight.Name = "maskHeight";
+            this.maskHeight.Size = new System.Drawing.Size(41, 20);
+            this.maskHeight.TabIndex = 7;
+            this.maskHeight.Value = new decimal(new int[] {
             10,
             0,
             0,
             0});
-            this.upperBound.ValueChanged += new System.EventHandler(this.refreshActualFrame);
             // 
-            // lowerBound
+            // maskWidth
             // 
-            this.lowerBound.Location = new System.Drawing.Point(6, 68);
-            this.lowerBound.Maximum = new decimal(new int[] {
+            this.maskWidth.Location = new System.Drawing.Point(6, 146);
+            this.maskWidth.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
-            this.lowerBound.Name = "lowerBound";
-            this.lowerBound.Size = new System.Drawing.Size(41, 20);
-            this.lowerBound.TabIndex = 3;
-            this.lowerBound.Value = new decimal(new int[] {
+            this.maskWidth.Name = "maskWidth";
+            this.maskWidth.Size = new System.Drawing.Size(41, 20);
+            this.maskWidth.TabIndex = 8;
+            this.maskWidth.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 39);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(52, 13);
+            this.label1.TabIndex = 6;
+            this.label1.Text = "Blob size:";
+            // 
+            // blobUpperBound
+            // 
+            this.blobUpperBound.Location = new System.Drawing.Point(6, 55);
+            this.blobUpperBound.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.blobUpperBound.Name = "blobUpperBound";
+            this.blobUpperBound.Size = new System.Drawing.Size(41, 20);
+            this.blobUpperBound.TabIndex = 2;
+            this.blobUpperBound.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.blobUpperBound.ValueChanged += new System.EventHandler(this.refreshActualFrame);
+            // 
+            // blobLowerBound
+            // 
+            this.blobLowerBound.Location = new System.Drawing.Point(6, 81);
+            this.blobLowerBound.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.blobLowerBound.Name = "blobLowerBound";
+            this.blobLowerBound.Size = new System.Drawing.Size(41, 20);
+            this.blobLowerBound.TabIndex = 3;
+            this.blobLowerBound.Value = new decimal(new int[] {
             5,
             0,
             0,
             0});
-            this.lowerBound.ValueChanged += new System.EventHandler(this.refreshActualFrame);
+            this.blobLowerBound.ValueChanged += new System.EventHandler(this.refreshActualFrame);
             // 
             // invertCheckBox
             // 
@@ -432,17 +507,6 @@
             // 
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
-            // 
-            // maskTagBox
-            // 
-            this.maskTagBox.AllowDrop = true;
-            this.maskTagBox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.maskTagBox.Location = new System.Drawing.Point(3, 16);
-            this.maskTagBox.MaxLength = 255;
-            this.maskTagBox.Name = "maskTagBox";
-            this.maskTagBox.Size = new System.Drawing.Size(146, 20);
-            this.maskTagBox.TabIndex = 1;
-            this.maskTagBox.Text = "mask";
             // 
             // MainForm
             // 
@@ -473,8 +537,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox_staticPicture)).EndInit();
             this.controlGroupBox.ResumeLayout(false);
             this.controlGroupBox.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.upperBound)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.lowerBound)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maskHeight)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.maskWidth)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.blobUpperBound)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.blobLowerBound)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -500,8 +566,8 @@
         private System.Windows.Forms.NumericUpDown actualIndex;
         private System.Windows.Forms.TrackBar videoSlider;
         private System.Windows.Forms.CheckBox invertCheckBox;
-        private System.Windows.Forms.NumericUpDown lowerBound;
-        private System.Windows.Forms.NumericUpDown upperBound;
+        private System.Windows.Forms.NumericUpDown blobLowerBound;
+        private System.Windows.Forms.NumericUpDown blobUpperBound;
         private System.Windows.Forms.CheckBox endingBias;
         private System.Windows.Forms.CheckBox beginingBias;
         private System.Windows.Forms.NumericUpDown runAnalysisTo;
@@ -514,6 +580,10 @@
         private System.Windows.Forms.GroupBox maskGroupBox;
         private System.Windows.Forms.ListBox maskControlContainer;
         private System.Windows.Forms.TextBox maskTagBox;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.NumericUpDown maskHeight;
+        private System.Windows.Forms.NumericUpDown maskWidth;
+        private System.Windows.Forms.Label label1;
     }
 }
 

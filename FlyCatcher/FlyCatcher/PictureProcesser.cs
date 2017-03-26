@@ -19,9 +19,7 @@ namespace FlyCatcher
     class BitmapPreProcessor : IPicturePreProcessor<Bitmap>
     {
         private MainForm owner;
-
         private Invert inv;
-
         private OtsuThreshold thresholding;
 
         public BitmapPreProcessor(MainForm owner)
@@ -39,7 +37,7 @@ namespace FlyCatcher
             Bitmap pictureToReturn = AForge.Imaging.Image.Clone(image);           
 
             if (shouldInvert) inv.ApplyInPlace(pictureToReturn);
-
+            
             return thresholding.Apply(Grayscale.CommonAlgorithms.Y.Apply(pictureToReturn));
         }
 

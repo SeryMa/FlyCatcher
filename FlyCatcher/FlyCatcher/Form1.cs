@@ -24,7 +24,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
 
-
 namespace FlyCatcher
 {
     public partial class MainForm : Form
@@ -32,54 +31,52 @@ namespace FlyCatcher
         private IPictureGiver<Bitmap> pictureGiver;
         private IPicturePreProcessor<Bitmap> pictureProcessor;
         private ICounter<Bitmap, Blob> blobCounter;
-        private MaskContainer maskContainer;
+        private List<IKeeper<Blob, double, double>> blobKeepers;
+        //private IKeeper<Blob, double, double> blobKeeper;
 
         internal bool shouldInvert { get { return invertCheckBox.Checked; } }
-        internal int upperBoundValue { get { return (int)upperBound.Value; } }
-        internal int lowerBoundValue { get { return (int)lowerBound.Value; } }
-        internal byte[,] mask { get { return maskContainer.maskArray; } }
-        
+        internal int upperBoundValue { get { return (int)blobUpperBound.Value; } }
+        internal int lowerBoundValue { get { return (int)blobLowerBound.Value; } }
+
         private Pen blobHighliter = new Pen(Color.Coral, 5);
         private Pen maskHighliter = new Pen(Color.Red, 4);
-
-        //internal int width { get { return VideoBox_staticPicture.Width; } }
-        //internal int height { get { return VideoBox_staticPicture.Height; } }
 
         private void debugInit()
         {
             pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", "jpg", 5, 600);
             pictureProcessor = new BitmapPreProcessor(this);
             blobCounter = new PictureBlobCounter(this);
-            maskContainer = new MaskContainer(pictureGiver.First.Width, pictureGiver.First.Height, 0);
-            
+            blobKeepers = new List<IKeeper<Blob, double, double>>();
+
             refreshActualFrame();
         }
 
         public MainForm()
         {
             InitializeComponent();
+
             //TODO: make init
             debugInit();
         }
 
         void refreshActualFrame()
         {
-            refreshFrame(pictureGiver[actualPicture]);
+            proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);
         }
 
-        void refreshFrame(Bitmap image)
+        void proccesFrame(Bitmap image, Action<IKeeper<Blob, double, double>, IEnumerable<Blob>> action)
         {
-            Bitmap rawIamge = image;
-            Bitmap processedImage = processImage(rawIamge);
+            Bitmap rawImage = image;
+            Bitmap processedImage = processImage(rawImage);
 
             IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
-            IEnumerable<Blob> blobs = from blobWithTag in blobsWithTags select blobWithTag.Item2;
 
-            highlightFlies(VideoBox_processedPicture, processedImage, blobs);
-            highlightFlies(VideoBox_staticPicture, rawIamge, blobs);
+            blobKeepers.ForEach(blobKeeper => action(blobKeeper, from blobWithTag in blobsWithTags
+                                                                 where blobKeeper.Tag == blobWithTag.Item1
+                                                                 select blobWithTag.Item2));
 
-            VideoBox_processedPicture.crossThreadOperation(() => Refresh());
-            VideoBox_staticPicture.crossThreadOperation(() => Refresh());
+            highlightFlies(VideoBox_processedPicture, processedImage);
+            highlightFlies(VideoBox_staticPicture, rawImage);
         }
 
         Bitmap processImage(Bitmap image)
@@ -87,16 +84,19 @@ namespace FlyCatcher
             return pictureProcessor.processImage(image);
         }
 
-        //TODO: hide the draw methods of blobs into BlobData
-        void highlightFlies(PictureBox pictureBox, Bitmap image, IEnumerable<Blob> rects)
+        void highlightFlies(PictureBox pictureBox, Bitmap image)
         {
             pictureBox.BackgroundImage = image;
-            pictureBox.Image = new Bitmap(image.Width, image.Height);
+            pictureBox.crossThreadOperation(() => pictureBox.Image = new Bitmap(image.Width, image.Height));
+            //pictureBox.Image = new Bitmap(image.Width, image.Height);
             Graphics gr = Graphics.FromImage(pictureBox.Image);
 
-            foreach (var rect in rects)
-                gr.DrawEllipse(blobHighliter, rect.Rectangle);
-        }        
+            foreach (var blobKeeper in blobKeepers)
+                foreach (var blob in blobKeeper.ItemsData)
+                    blob.Draw(gr);
+
+            pictureBox.crossThreadOperation(() => Refresh());
+        }
 
         bool running = false;
         private void StopStartButton_Click(object sender, EventArgs e)
@@ -123,7 +123,7 @@ namespace FlyCatcher
             {
                 foreach (Bitmap picture in pictureGiver)
                 {
-                    if (running) refreshFrame(picture);
+                    if (running) proccesFrame(picture, Extensions.ActualizeBlobKeeper);
                     else break;
                 }
 
@@ -213,12 +213,12 @@ namespace FlyCatcher
         enum DrawStyle { None, Ellipse, Rectangle, Curve };
         DrawStyle actualStyle = DrawStyle.None;
         bool isOkayToDraw() { return actualStyle != DrawStyle.None; }
-        string maskTag() { return maskTagBox.Text; }
+        string maskTag { get { return maskTagBox.Text; } }
         Rectangle drawRectangle;
         //TOOD: get radius or dimensionsfrom user
-        float halfWidth = 10;
-        float halfHeight = 10;
-        float wheelCorrection = 120;
+        float halfWidth { get { return (float)maskWidth.Value; } set { maskWidth.Value = (decimal)value; } }
+        float halfHeight { get { return (float)maskHeight.Value; } set { maskHeight.Value = (decimal)value; } }
+        float wheelCorrection = 1200;
         delegate void drawEvent();
 
         private void maskingEventHandler(drawEvent ev)
@@ -240,15 +240,20 @@ namespace FlyCatcher
         {
             maskingEventHandler(() =>
             {
+                halfWidth += halfWidth * e.Delta / wheelCorrection;
+
                 halfWidth =
                     Math.Min(
                         Math.Max(
-                            halfWidth + e.Delta / wheelCorrection, 1),
+                            halfWidth, 1),
                         VideoBox_processedPicture.Width / 2);
+
+                halfHeight += halfHeight * e.Delta / wheelCorrection;
+                
                 halfHeight =
                     Math.Min(
                         Math.Max(
-                            halfHeight + e.Delta / wheelCorrection, 1),
+                            halfHeight, 1),
                         VideoBox_processedPicture.Height / 2);
             });
         }
@@ -273,10 +278,10 @@ namespace FlyCatcher
                         //containFunction = ???
                         break;
                     case DrawStyle.Ellipse:
-                        mask = new EllipMask(boundaryRectangle, drawRectangle, maskTag());
+                        mask = new EllipMask(boundaryRectangle, drawRectangle, maskTag);
                         break;
                     case DrawStyle.Rectangle:
-                        mask = new RectMask(boundaryRectangle, drawRectangle, maskTag());
+                        mask = new RectMask(boundaryRectangle, drawRectangle, maskTag);
                         break;
                     //because of 'isOkayToDraw' testing, this part of switch ought to never occur,
                     //therefore 'containFunction' should be assigned properly
@@ -285,13 +290,23 @@ namespace FlyCatcher
                         break;
                 }
 
-                //TODO: tag name of the mask
-                 
                 blobCounter.Masks.Add(mask);
                 maskControlContainer.Items.Add(mask);
+
+                Bitmap rawImage = pictureGiver[actualPicture];
+                Bitmap processedImage = processImage(rawImage);
+
+                IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
+
+                blobKeepers.Add(
+                    new BlobKeeper(
+                        from blobWithTag in blobsWithTags where maskTag == blobWithTag.Item1 select blobWithTag.Item2,
+                        maskTag,
+                        mask.isIn));
+
+                refreshActualFrame();
             });
-            
-            refreshActualFrame();
+
         }
 
         private void VideoBox_Paint(object sender, PaintEventArgs e)
