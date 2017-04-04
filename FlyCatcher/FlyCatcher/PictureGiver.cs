@@ -20,10 +20,12 @@ namespace FlyCatcher
 
         bool isValidIndex(int index);
 
+        int actualIndex { get; set; }
+
         int RunFrom { get; set; }
         int RunTo { get; set; }
         int RunToMax { get; }
-        int Step { set; }
+        int Step { get; set; }
     }
 
     class SeparatePhotoGiver : IPictureGiver<Bitmap>
@@ -31,13 +33,12 @@ namespace FlyCatcher
         string photoMask;
         string folder;
         string fileSuffix;
-        int numbers;
+        int digitCount;
 
-        int actualIndex;
+        public int actualIndex { get; set; }
         int lastIndex;        //TODO: problem with undefined values
         int fromIndex;
-        int toIndex;
-        int step;
+        int toIndex;        
 
         public Bitmap Actual
         { get { return this[actualIndex]; } }
@@ -61,12 +62,28 @@ namespace FlyCatcher
         { get { return lastIndex; } }
 
         public int Step
-        { set { step = value; } }
+        { get; set; }
 
-        public bool isValidIndex(int index)
+        public bool isValidIndex(int index) => index >= 0 && index <= lastIndex;
+
+        private void init(string photoMask, string folder, string fileSuffix, int numbers, int last)
         {
-            return index >= 0 && index <= lastIndex;
+            actualIndex = 0;
+            this.photoMask = photoMask;
+            this.digitCount = numbers;
+            this.fileSuffix = fileSuffix;
+
+            this.folder = folder;
+
+            lastIndex = last;
+            fromIndex = 0;
+            toIndex = lastIndex;
+            Step = 1;
         }
+
+        private string getMask(string file) => file.TrimEnd(Constants.Digits.ToCharArray());
+        private string getLast(string file)=>new string(file.Reverse().TakeWhile(char.IsDigit).Reverse().ToArray());
+
 
         /// <summary>
         /// Constructor for photo giver, that iterates over images in a folder.
@@ -76,32 +93,38 @@ namespace FlyCatcher
         /// <param name="fileSuffix"></param>
         /// <param name="numbers"></param>
         /// <param name="last"></param>
-        public SeparatePhotoGiver(string photoMask, string folder, string fileSuffix, int numbers, int last)
+        public SeparatePhotoGiver(string path)
         {
-            actualIndex = 0;
-            this.photoMask = photoMask;
-            this.numbers = numbers;
-            this.fileSuffix = fileSuffix;
+            string str = getLast(Path.GetFileNameWithoutExtension(path));
 
-            this.folder = folder;
+            init(getMask(Path.GetFileNameWithoutExtension(path)),
+                 Path.GetDirectoryName(path),
+                 Path.GetExtension(path),
+                 str.Length,
+                 int.Parse(str)
+                );           
+        }
 
-            lastIndex = last;
-            fromIndex = 0;
-            toIndex = lastIndex;
-            step = 1;
+        /// <summary>
+        /// Constructor for photo giver, that iterates over images in a folder.
+        /// </summary>
+        /// <param name="photoMask"></param>
+        /// <param name="folder"></param>
+        /// <param name="fileSuffix"></param>
+        /// <param name="digitCount"></param>
+        /// <param name="last"></param>
+        public SeparatePhotoGiver(string photoMask, string folder, string fileSuffix, int digitCount, int last)
+        {
+            init(photoMask, folder, fileSuffix, digitCount, last);
         }
 
         private string photoName(int index)
-        {
-            //StringBuilder num = new StringBuilder(index.ToString($"D{numbers}");
-            //while (num.Length < numbers)
-            //    num.Append(0);
+        {        
+            string num = index.ToString($"D{digitCount}");
 
-            string num = index.ToString($"D{numbers}");
+            Console.WriteLine($"{folder}\\{photoMask}{num}{fileSuffix}");
 
-            Console.WriteLine($"{folder}\\{photoMask}{num}.{fileSuffix}");
-
-            return $"{folder}\\{photoMask}{num}.{fileSuffix}";
+            return $"{folder}\\{photoMask}{num}{fileSuffix}";
         }
 
         private bool validPhoto
@@ -109,11 +132,11 @@ namespace FlyCatcher
 
         public IEnumerator<Bitmap> GetEnumerator()
         {
-            int tmpActual = fromIndex;
-            while (validPhoto && tmpActual <= toIndex)
+            actualIndex = fromIndex;
+            while (validPhoto && actualIndex <= toIndex)
             {
-                yield return this[tmpActual];
-                tmpActual += step;
+                yield return this[actualIndex];
+                actualIndex += Step;
             }
         }
 

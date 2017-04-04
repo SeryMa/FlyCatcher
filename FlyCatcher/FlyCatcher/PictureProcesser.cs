@@ -35,10 +35,13 @@ namespace FlyCatcher
         public Bitmap processImage(Bitmap image)
         {
             Bitmap pictureToReturn = AForge.Imaging.Image.Clone(image);           
-
-            if (shouldInvert) inv.ApplyInPlace(pictureToReturn);
             
-            return thresholding.Apply(Grayscale.CommonAlgorithms.Y.Apply(pictureToReturn));
+            if (shouldInvert) inv.ApplyInPlace(pictureToReturn);            
+
+            //return thresholding.Apply(Grayscale.CommonAlgorithms.Y.Apply(pictureToReturn));
+            //return thresholding.Apply(Grayscale.CommonAlgorithms.RMY.Apply(pictureToReturn));
+            return thresholding.Apply(Grayscale.CommonAlgorithms.BT709.Apply(pictureToReturn));
+            //TOOD: let the choice of algorithm up to the user
         }
 
         public void processImageInPlace(Bitmap image)

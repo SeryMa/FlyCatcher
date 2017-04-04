@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Drawing;
 
 using AForge.Imaging;
 using AForge.Imaging.Filters;
@@ -17,9 +19,13 @@ namespace FlyCatcher
         string Tag { get; }        
 
         void ActualizeData(IEnumerable<ItemType> items);
-        //void ActualizeData(ItemType[] items);
         void Refresh(IEnumerable<ItemType> items);
-        void Init(IEnumerable<ItemType> items, string tag, Extensions.isInCurve curveFunction);
+        void Init(IEnumerable<ItemType> items, string tag);
+
+        void PrintOut(StreamWriter writer, Constants.OutputFormat format);
+        void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format);
+        void PrintOutTag(StreamWriter writer, Constants.OutputFormat format);
+        void Draw(Graphics gr, Constants.HighlightFormat format);
     }
 
     class BlobKeeper : IKeeper<Blob, double, double>
@@ -30,17 +36,18 @@ namespace FlyCatcher
         public ICollection<IData<Blob, double, double>> ItemsData { get { return itemsData; }}
         private List<IData<Blob, double, double>> itemsData;
 
-        //TODO: remove if remains unused
-        private Extensions.isInCurve curveFunction;
+        private int historyCount;
 
         /// <summary>
         /// Tag of the Keeper. Usually the mask Keeper is handling.
         /// </summary>
         public string Tag { get; private set; }
 
-        public BlobKeeper(IEnumerable<Blob> items, string tag, Extensions.isInCurve curveFunction)
+        public BlobKeeper(IEnumerable<Blob> items, string tag, int historyCount)
         {
-            Init(items, tag, curveFunction);
+            Init(items, tag);
+
+            this.historyCount = historyCount;
         }
 
         /// <summary>
@@ -48,11 +55,10 @@ namespace FlyCatcher
         /// </summary>
         /// <param name="items">Enumeration is converted to IData<Blob> and inicialize ItemsData</param>
         /// <param name="tag">Tag that is assigned to Tag property</param>
-        public void Init(IEnumerable<Blob> items, string tag, Extensions.isInCurve curveFunction)
+        public void Init(IEnumerable<Blob> items, string tag)
         {
             Refresh(items);
-
-            this.curveFunction = curveFunction;
+            
             Tag = tag;
         }
 
@@ -65,8 +71,7 @@ namespace FlyCatcher
             itemsData = new List<IData<Blob, double, double>>();
 
             foreach (var blob in items)
-                itemsData.Add(new BlobData(10, blob, Tag));
-
+                itemsData.Add(new BlobData(historyCount, blob, Tag));
 
             matrix = new SquareMatrix(10);
         }
@@ -109,33 +114,7 @@ namespace FlyCatcher
 
                 }
             }
-        }
-
-        private IEnumerable<Blob> DetectMerges(IEnumerable<Blob> items)
-        {
-            List<Blob> merges = new List<Blob>();
-            foreach (var keeperA in itemsData)
-                foreach (var keeperB in itemsData)
-                    if (keeperA != keeperB &&
-                        keeperA.PredictNext.DistanceTo(keeperB.PredictNext) < keeperA.First.Rectangle.getDiameter() + keeperB.First.Rectangle.getDiameter())
-                        return null; //TODO    
-                
-            return items;
-        }
-
-        private IEnumerable<Blob> CatchRuners(IEnumerable<Blob> items)
-        {
-            return items.Concat(from dta in itemsData where curveFunction(dta.PredictNext) select dta.First);
-        }
-
-        private IEnumerable<Blob> FilterNoise(IEnumerable<Blob> items)
-        {
-            return items;
-
-            //TODO: filter out the noise
-            double averageSize = (from keeper in itemsData select keeper.averageSize).Average();
-            return items.Where(blob => averageSize.isSameAs(blob.Area, 10));            
-        }
+        }        
 
         private SquareMatrix matrix = new SquareMatrix(10);
         private double getMatch(IData<Blob, double, double> agent, Blob blob)
@@ -143,22 +122,52 @@ namespace FlyCatcher
             return agent.GetMatch(blob);
         }
         public void ActualizeDataAssignmentTask(Blob[] items)
-        {
-            //Blob[] clearedItems = FilterNoise(DetectMerges(CatchRuners(items))).ToArray();
-            Blob[] clearedItems = items;
-            
-            var assignment = matrix.GetPerfectAssignment(itemsData, clearedItems, getMatch);
+        {            
+            var assignment = matrix.GetPerfectAssignment(itemsData, items, getMatch);
 
             foreach (var properMatch in assignment[0])
-                itemsData[properMatch.Item1].AddItem(clearedItems[properMatch.Item2]);
+                itemsData[properMatch.Item1].AddItem(items[properMatch.Item2]);
 
             foreach (var taskMatch in assignment[1])
-                itemsData.Add(new BlobData(10, clearedItems[taskMatch.Item2], Tag));
+                itemsData.Add(new BlobData(historyCount, items[taskMatch.Item2], Tag));
 
             //TODO: this is wrong...
-            foreach (var agentMatch in assignment[2])
-                itemsData[agentMatch.Item1].AddItem(itemsData[agentMatch.Item1].First);
+            //foreach (var agentMatch in assignment[2])
+            //    itemsData[agentMatch.Item1].AddItem(itemsData[agentMatch.Item1].First);
 
+            //TODO: this is not so wrong...
+            foreach (var agentMatch in assignment[2])
+                itemsData[agentMatch.Item1].makeInvalid();
+        }
+
+        public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
+        {
+            if (format.HasFlag(Constants.OutputFormat.Objects))
+                writer.Write($"{itemsData.Where(dta => dta.valid).Count()}{Constants.Delimeter}");
+
+            foreach (var blobData in itemsData)
+                blobData.PrintOut(writer, format);            
+        }
+        public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
+        {
+            if (format.HasFlag(Constants.OutputFormat.Objects))
+                writer.Write($"{Constants.Delimeter}");
+
+            foreach (var blobData in itemsData)
+                blobData.PrintOutHeader(writer, format);
+        }
+        public void PrintOutTag(StreamWriter writer, Constants.OutputFormat format)
+        {
+            if (format.HasFlag(Constants.OutputFormat.Objects))
+                writer.Write($"{Constants.Delimeter}");
+
+            foreach (var blobData in itemsData)
+                blobData.PrintOutTag(writer, format);
+        }
+        public void Draw(Graphics gr, Constants.HighlightFormat format)
+        {
+            foreach (var blobData in itemsData.Where(dta => dta.valid))
+                blobData.Draw(gr, format);   
         }
     }
 }

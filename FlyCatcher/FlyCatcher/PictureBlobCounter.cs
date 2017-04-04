@@ -5,22 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using AForge;
+
 using AForge.Imaging;
 using AForge.Imaging.Filters;
 
 namespace FlyCatcher
 {
-    interface ICounter<in T1, T2>
+    interface ICounter<in T1, T2, T3>
     {
         IEnumerable<Tuple<string, T2>> CountItems(T1 image);
-        ICollection<CurveMask> Masks { get;  set; }
+        ICollection<IMask<T3>> Masks { get;  set; }
     }
 
-    class PictureBlobCounter : ICounter<Bitmap, Blob>
+    class PictureBlobCounter : ICounter<Bitmap, Blob, AForge.Point>
     {
         private BlobCounter blobCounter;
-        public ICollection<CurveMask> Masks { get; set; }
+        public ICollection<IMask<AForge.Point>> Masks { get; set; }
         private MainForm owner;        
+        private BlobFilter filter;
     
         int upperBound { get { return owner.upperBoundValue; } }
         int lowerBound { get { return owner.lowerBoundValue; } }
@@ -30,17 +32,24 @@ namespace FlyCatcher
             this.owner = owner;
 
             blobCounter = new BlobCounter();
-            Masks = new List<CurveMask>();
+            Masks = new List<IMask<AForge.Point>>();                       
+
             //In coupled filtering mode, objects are filtered out in the case if their width is smaller than MinWidth and height is smaller than MinHeight.
             blobCounter.CoupledSizeFiltering = true;
             blobCounter.FilterBlobs = true;
             blobCounter.BackgroundThreshold = Color.Gray;
+
+            //filter = new BlobFilter();
+            //blobCounter.BlobsFilter = filter;
         }
 
         public IEnumerable<Tuple<string, Blob>> CountItems(Bitmap image)
         {
             blobCounter.MaxHeight = blobCounter.MaxWidth = upperBound;
-            blobCounter.MinHeight = blobCounter.MinWidth = lowerBound;
+            blobCounter.MinHeight = blobCounter.MinWidth = lowerBound;            
+
+            //filter.min = lowerBound;
+            //filter.max = upperBound;
 
             blobCounter.ProcessImage(image);
 

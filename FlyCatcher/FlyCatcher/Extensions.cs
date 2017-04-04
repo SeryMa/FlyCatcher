@@ -1,13 +1,13 @@
-﻿using AForge.Imaging.Filters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing.Imaging;
-using AForge.Imaging;
 
+using AForge.Imaging;
+using AForge.Imaging.Filters;
 
 namespace FlyCatcher
 {
@@ -159,14 +159,12 @@ namespace FlyCatcher
 
         static Random rand = new Random();
 
-        public const string Alphabet =
-        "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         public static string GenerateString(int size)
         {
             char[] chars = new char[size];
 
             for (int i = 0; i < size; i++)
-                chars[i] = Alphabet[rand.Next(Alphabet.Length)];
+                chars[i] = Constants.AlfaNumerics[rand.Next(Constants.AlfaNumerics.Length)];
 
             return new string(chars);
         }
@@ -192,7 +190,6 @@ namespace FlyCatcher
         }
 
         public static void SetAll<T>(this T[][] matrix, T value) => matrix.ForEach(x => value);
-
 
         public static int Columns<T>(this T[][] matrix) => matrix[0].Length;
         public static int Rows<T>(this T[][] matrix) => matrix.Length;
@@ -228,6 +225,54 @@ namespace FlyCatcher
         public static bool isZero(this double num) => (num.isSameAs(0));
         public static bool isSameAs(this double numA, double numB) => numA.isSameAs(numB, 0.0000000001);
         public static bool isSameAs(this double numA, double numB, double precision) => (Math.Abs(numA - numB) < precision);
+
+        public static int ParseBool(bool pred) => pred ? 1 : 0;        
+    }
+
+    static class Constants
+    {
+        public const string Digits = "0123456789";
+        public const string Alphabet = "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        public const string AlfaNumerics =
+        "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        public const char Delimeter = ';';
+        public const char Blank = '-';
+
+        public const string JPGFileExtension = ".jpg";
+        public const string PNGFileExtension = ".png";
+        public const string BMPFileExtension = ".bmp";
+        public const string ConfigFileExtension = ".init";
+        public const string MaskFileExtension = ".mask";
+        public const string OutputFileExtension = ".output";
+        public const string CSVFileExtension = ".csv";
+        public const string StateFileExtension = ".state";        
+
+        [Flags]
+        public enum OutputFormat { None = 0, Objects = 1, AverageSpeed = 2, ImmediateSpeed = 4, Position = 8, Prediction = 16, ImmadiateArea = 32, AverageArea = 64}
+        public static Dictionary<OutputFormat, string> OutputTag = new Dictionary<OutputFormat, string>()
+        {
+            { OutputFormat.None, "" },
+            { OutputFormat.Objects, "objects" },
+            { OutputFormat.AverageSpeed, "avg_speed" },
+            { OutputFormat.ImmediateSpeed, "imm_speed" },
+            { OutputFormat.Position, "positinon" },
+            { OutputFormat.Prediction, "prediction" },
+            { OutputFormat.ImmadiateArea, "imm_area" },
+            { OutputFormat.AverageArea, "avg_area" }            
+        };
+
+        [Flags]
+        public enum HighlightFormat { None = 0, Object = 1, Prediction = 2, Trace = 4, Tag = 8, Direction = 16 }
+        public static Dictionary<HighlightFormat, string> HighlightTag = new Dictionary<HighlightFormat, string>()
+        {
+            {HighlightFormat.None, "" },
+            {HighlightFormat.Object, "mark_object" },
+            {HighlightFormat.Prediction, "mark_prediction" },
+            {HighlightFormat.Trace, "mark_trace" },
+            {HighlightFormat.Tag, "mark_tag" },
+            {HighlightFormat.Direction, "mark_direction" },            
+        };
     }
 
 }

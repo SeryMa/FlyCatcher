@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+
 using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
@@ -12,13 +13,15 @@ namespace FlyCatcher
 {
     interface IMask<T>
     {
+        string tag { get; }
         bool isIn(T point);
+        void drawMask(Graphics gr);        
     }
 
     abstract class CurveMask : IMask<AForge.Point>
     {        
         private Extensions.isInCurve curveFunction;
-        public string tag;
+        public string tag { get; }
         protected Rectangle rect;
         
         protected static Font drawFont = new Font("Arial", 16);

@@ -38,6 +38,8 @@
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.fpsLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
+            this.HighlightBlob = new System.Windows.Forms.GroupBox();
+            this.highlightBlobPictureBox = new System.Windows.Forms.PictureBox();
             this.maskGroupBox = new System.Windows.Forms.GroupBox();
             this.maskTagBox = new System.Windows.Forms.TextBox();
             this.maskControlContainer = new System.Windows.Forms.ListBox();
@@ -48,15 +50,15 @@
             this.runAnalysisFrom = new System.Windows.Forms.NumericUpDown();
             this.actualIndex = new System.Windows.Forms.NumericUpDown();
             this.videoSlider = new System.Windows.Forms.TrackBar();
-            this.StopStartButton = new System.Windows.Forms.Button();
-            this.VideoBox_processedPicture = new System.Windows.Forms.PictureBox();
+            this.StartPauseButton = new System.Windows.Forms.Button();
+            this.VideoBox = new System.Windows.Forms.PictureBox();
             this.MaskContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.applyMaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MaskCIrcle = new System.Windows.Forms.ToolStripMenuItem();
             this.MaskRectangle = new System.Windows.Forms.ToolStripMenuItem();
             this.drawCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.VideoBox_staticPicture = new System.Windows.Forms.PictureBox();
             this.controlGroupBox = new System.Windows.Forms.GroupBox();
+            this.DisplayOriginal = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.maskHeight = new System.Windows.Forms.NumericUpDown();
             this.maskWidth = new System.Windows.Forms.NumericUpDown();
@@ -65,18 +67,20 @@
             this.blobLowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.StopButton = new System.Windows.Forms.Button();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
+            this.HighlightBlob.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.highlightBlobPictureBox)).BeginInit();
             this.maskGroupBox.SuspendLayout();
             this.videoGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisFrom)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.videoSlider)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.VideoBox_processedPicture)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).BeginInit();
             this.MaskContextMenuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.VideoBox_staticPicture)).BeginInit();
             this.controlGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maskHeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.maskWidth)).BeginInit();
@@ -147,6 +151,7 @@
             // 
             // mainPanel
             // 
+            this.mainPanel.Controls.Add(this.HighlightBlob);
             this.mainPanel.Controls.Add(this.maskGroupBox);
             this.mainPanel.Controls.Add(this.videoGroupBox);
             this.mainPanel.Controls.Add(this.controlGroupBox);
@@ -155,6 +160,27 @@
             this.mainPanel.Name = "mainPanel";
             this.mainPanel.Size = new System.Drawing.Size(928, 484);
             this.mainPanel.TabIndex = 2;
+            // 
+            // HighlightBlob
+            // 
+            this.HighlightBlob.Controls.Add(this.highlightBlobPictureBox);
+            this.HighlightBlob.Location = new System.Drawing.Point(12, 239);
+            this.HighlightBlob.Name = "HighlightBlob";
+            this.HighlightBlob.Size = new System.Drawing.Size(92, 220);
+            this.HighlightBlob.TabIndex = 10;
+            this.HighlightBlob.TabStop = false;
+            this.HighlightBlob.Text = "Highlight";
+            // 
+            // highlightBlobPictureBox
+            // 
+            this.highlightBlobPictureBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.highlightBlobPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.highlightBlobPictureBox.Location = new System.Drawing.Point(3, 16);
+            this.highlightBlobPictureBox.Name = "highlightBlobPictureBox";
+            this.highlightBlobPictureBox.Size = new System.Drawing.Size(86, 201);
+            this.highlightBlobPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.highlightBlobPictureBox.TabIndex = 14;
+            this.highlightBlobPictureBox.TabStop = false;
             // 
             // maskGroupBox
             // 
@@ -196,15 +222,15 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.videoGroupBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.videoGroupBox.Controls.Add(this.StopButton);
             this.videoGroupBox.Controls.Add(this.endingBias);
             this.videoGroupBox.Controls.Add(this.beginingBias);
             this.videoGroupBox.Controls.Add(this.runAnalysisTo);
             this.videoGroupBox.Controls.Add(this.runAnalysisFrom);
             this.videoGroupBox.Controls.Add(this.actualIndex);
             this.videoGroupBox.Controls.Add(this.videoSlider);
-            this.videoGroupBox.Controls.Add(this.StopStartButton);
-            this.videoGroupBox.Controls.Add(this.VideoBox_processedPicture);
-            this.videoGroupBox.Controls.Add(this.VideoBox_staticPicture);
+            this.videoGroupBox.Controls.Add(this.StartPauseButton);
+            this.videoGroupBox.Controls.Add(this.VideoBox);
             this.videoGroupBox.Location = new System.Drawing.Point(110, 13);
             this.videoGroupBox.Name = "videoGroupBox";
             this.videoGroupBox.Size = new System.Drawing.Size(648, 461);
@@ -218,7 +244,7 @@
             this.endingBias.AutoSize = true;
             this.endingBias.Checked = true;
             this.endingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.endingBias.Location = new System.Drawing.Point(315, 436);
+            this.endingBias.Location = new System.Drawing.Point(393, 436);
             this.endingBias.Name = "endingBias";
             this.endingBias.Size = new System.Drawing.Size(79, 17);
             this.endingBias.TabIndex = 13;
@@ -232,7 +258,7 @@
             this.beginingBias.AutoSize = true;
             this.beginingBias.Checked = true;
             this.beginingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.beginingBias.Location = new System.Drawing.Point(151, 436);
+            this.beginingBias.Location = new System.Drawing.Point(229, 436);
             this.beginingBias.Name = "beginingBias";
             this.beginingBias.Size = new System.Drawing.Size(112, 17);
             this.beginingBias.TabIndex = 12;
@@ -244,7 +270,7 @@
             // 
             this.runAnalysisTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisTo.Enabled = false;
-            this.runAnalysisTo.Location = new System.Drawing.Point(269, 435);
+            this.runAnalysisTo.Location = new System.Drawing.Point(347, 435);
             this.runAnalysisTo.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -261,7 +287,7 @@
             // 
             this.runAnalysisFrom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisFrom.Enabled = false;
-            this.runAnalysisFrom.Location = new System.Drawing.Point(105, 435);
+            this.runAnalysisFrom.Location = new System.Drawing.Point(183, 435);
             this.runAnalysisFrom.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -277,7 +303,7 @@
             // actualIndex
             // 
             this.actualIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.actualIndex.Location = new System.Drawing.Point(59, 435);
+            this.actualIndex.Location = new System.Drawing.Point(137, 435);
             this.actualIndex.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -301,34 +327,34 @@
             this.videoSlider.TabIndex = 8;
             this.videoSlider.Scroll += new System.EventHandler(this.videoSlider_Scroll);
             // 
-            // StopStartButton
+            // StartPauseButton
             // 
-            this.StopStartButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.StopStartButton.Location = new System.Drawing.Point(6, 435);
-            this.StopStartButton.Name = "StopStartButton";
-            this.StopStartButton.Size = new System.Drawing.Size(47, 20);
-            this.StopStartButton.TabIndex = 6;
-            this.StopStartButton.Text = "Start";
-            this.StopStartButton.UseVisualStyleBackColor = true;
-            this.StopStartButton.Click += new System.EventHandler(this.StopStartButton_Click);
+            this.StartPauseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.StartPauseButton.Location = new System.Drawing.Point(6, 435);
+            this.StartPauseButton.Name = "StartPauseButton";
+            this.StartPauseButton.Size = new System.Drawing.Size(47, 20);
+            this.StartPauseButton.TabIndex = 6;
+            this.StartPauseButton.Text = "Start";
+            this.StartPauseButton.UseVisualStyleBackColor = true;
+            this.StartPauseButton.Click += new System.EventHandler(this.PauseStartButton_Click);
             // 
-            // VideoBox_processedPicture
+            // VideoBox
             // 
-            this.VideoBox_processedPicture.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.VideoBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.VideoBox_processedPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.VideoBox_processedPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
-            this.VideoBox_processedPicture.Location = new System.Drawing.Point(341, 19);
-            this.VideoBox_processedPicture.Name = "VideoBox_processedPicture";
-            this.VideoBox_processedPicture.Size = new System.Drawing.Size(300, 302);
-            this.VideoBox_processedPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.VideoBox_processedPicture.TabIndex = 1;
-            this.VideoBox_processedPicture.TabStop = false;
-            this.VideoBox_processedPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
-            this.VideoBox_processedPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.applyMask);
-            this.VideoBox_processedPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
-            this.VideoBox_processedPicture.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ChangeDimensions);
+            this.VideoBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.VideoBox.ContextMenuStrip = this.MaskContextMenuStrip1;
+            this.VideoBox.Location = new System.Drawing.Point(6, 19);
+            this.VideoBox.Name = "VideoBox";
+            this.VideoBox.Size = new System.Drawing.Size(635, 362);
+            this.VideoBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.VideoBox.TabIndex = 1;
+            this.VideoBox.TabStop = false;
+            this.VideoBox.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
+            this.VideoBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.applyMask);
+            this.VideoBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
+            this.VideoBox.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ChangeDimensions);
             // 
             // MaskContextMenuStrip1
             // 
@@ -370,26 +396,9 @@
             this.drawCurveToolStripMenuItem.Text = "Draw curve";
             this.drawCurveToolStripMenuItem.Click += new System.EventHandler(this.StartDrawCurve);
             // 
-            // VideoBox_staticPicture
-            // 
-            this.VideoBox_staticPicture.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.VideoBox_staticPicture.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.VideoBox_staticPicture.ContextMenuStrip = this.MaskContextMenuStrip1;
-            this.VideoBox_staticPicture.Location = new System.Drawing.Point(6, 19);
-            this.VideoBox_staticPicture.Name = "VideoBox_staticPicture";
-            this.VideoBox_staticPicture.Size = new System.Drawing.Size(300, 302);
-            this.VideoBox_staticPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.VideoBox_staticPicture.TabIndex = 8;
-            this.VideoBox_staticPicture.TabStop = false;
-            this.VideoBox_staticPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.VideoBox_Paint);
-            this.VideoBox_staticPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.applyMask);
-            this.VideoBox_staticPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
-            this.VideoBox_staticPicture.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ChangeDimensions);
-            // 
             // controlGroupBox
             // 
+            this.controlGroupBox.Controls.Add(this.DisplayOriginal);
             this.controlGroupBox.Controls.Add(this.label2);
             this.controlGroupBox.Controls.Add(this.maskHeight);
             this.controlGroupBox.Controls.Add(this.maskWidth);
@@ -403,6 +412,17 @@
             this.controlGroupBox.TabIndex = 7;
             this.controlGroupBox.TabStop = false;
             this.controlGroupBox.Text = "Controls";
+            // 
+            // DisplayOriginal
+            // 
+            this.DisplayOriginal.AutoSize = true;
+            this.DisplayOriginal.Location = new System.Drawing.Point(6, 172);
+            this.DisplayOriginal.Name = "DisplayOriginal";
+            this.DisplayOriginal.Size = new System.Drawing.Size(79, 17);
+            this.DisplayOriginal.TabIndex = 10;
+            this.DisplayOriginal.Text = "Raw image";
+            this.DisplayOriginal.UseVisualStyleBackColor = true;
+            this.DisplayOriginal.CheckedChanged += new System.EventHandler(this.DisplayOriginal_CheckedChanged);
             // 
             // label2
             // 
@@ -508,8 +528,20 @@
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
             // 
+            // StopButton
+            // 
+            this.StopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.StopButton.Location = new System.Drawing.Point(59, 435);
+            this.StopButton.Name = "StopButton";
+            this.StopButton.Size = new System.Drawing.Size(47, 20);
+            this.StopButton.TabIndex = 14;
+            this.StopButton.Text = "Stop";
+            this.StopButton.UseVisualStyleBackColor = true;
+            this.StopButton.Click += new System.EventHandler(this.StopButton_Click);
+            // 
             // MainForm
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(928, 530);
@@ -519,11 +551,15 @@
             this.MainMenuStrip = this.mainMenuStrip;
             this.Name = "MainForm";
             this.Text = "Simple Player";
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.InitParams);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainForm_DragEnter);
             this.mainMenuStrip.ResumeLayout(false);
             this.mainMenuStrip.PerformLayout();
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.mainPanel.ResumeLayout(false);
+            this.HighlightBlob.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.highlightBlobPictureBox)).EndInit();
             this.maskGroupBox.ResumeLayout(false);
             this.maskGroupBox.PerformLayout();
             this.videoGroupBox.ResumeLayout(false);
@@ -532,9 +568,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisFrom)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.videoSlider)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.VideoBox_processedPicture)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).EndInit();
             this.MaskContextMenuStrip1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.VideoBox_staticPicture)).EndInit();
             this.controlGroupBox.ResumeLayout(false);
             this.controlGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maskHeight)).EndInit();
@@ -557,11 +592,10 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem openVideofileusingDirectShowToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
-        private System.Windows.Forms.PictureBox VideoBox_processedPicture;
+        private System.Windows.Forms.PictureBox VideoBox;
         private System.Windows.Forms.ToolStripStatusLabel fpsLabel;
         private System.Windows.Forms.GroupBox controlGroupBox;
-        private System.Windows.Forms.Button StopStartButton;
-        private System.Windows.Forms.PictureBox VideoBox_staticPicture;
+        private System.Windows.Forms.Button StartPauseButton;
         private System.Windows.Forms.GroupBox videoGroupBox;
         private System.Windows.Forms.NumericUpDown actualIndex;
         private System.Windows.Forms.TrackBar videoSlider;
@@ -584,6 +618,10 @@
         private System.Windows.Forms.NumericUpDown maskHeight;
         private System.Windows.Forms.NumericUpDown maskWidth;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.GroupBox HighlightBlob;
+        private System.Windows.Forms.PictureBox highlightBlobPictureBox;
+        private System.Windows.Forms.CheckBox DisplayOriginal;
+        private System.Windows.Forms.Button StopButton;
     }
 }
 
