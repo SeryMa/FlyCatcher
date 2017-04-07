@@ -168,6 +168,48 @@ namespace FlyCatcher
             //TODO: copy previous state
             ActualState = new StreamReader(path);
         }
+
+        private void InitParams(object sender, DragEventArgs e)
+        {
+            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+
+            foreach (var item in fileList)
+            {
+                switch (Path.GetExtension(item))
+                {
+                    case ".config":
+                        initParams(item);
+                        break;
+                    case ".mask":
+                        initMasks(item);
+                        break;
+                    case ".output":
+                        initOutputFormat(item);
+                        break;
+                    case ".csv":
+                        initOutput(item);
+                        break;
+                    case ".state":
+                        initState(item);
+                        break;
+                    case ".jpg":
+                    case ".png":
+                    case ".bmp":
+                        initPictureGiverWithSeparatePhotoGiver(item);
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
+            refreshActualFrame();
+        }
+
+        private void MainForm_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Link;
+        }
         #endregion
 
         #region Output
@@ -440,6 +482,11 @@ namespace FlyCatcher
             if (runAnalysisTo.Value < runAnalysisFrom.Value)
                 runAnalysisTo.Value = runAnalysisFrom.Value;
         }
+
+        private void parametrsValueChanged(object sender, EventArgs e)
+        {
+            refreshActualFrame();
+        }
         #endregion
 
         #region Masking
@@ -550,19 +597,8 @@ namespace FlyCatcher
             {
                 addMask(actualStyle, MathFunctions.getPercentRectangle(drawRectangle, VideoBox.Size), maskTag);
 
-                ////TOOD: high code duality with 'processActualFrame'
-                //Bitmap rawImage = pictureGiver[actualPicture];
-                //Bitmap processedImage = processImage(rawImage);
-
-                //IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
-
-                //blobKeepers.Add(
-                //    new BlobKeeper(
-                //        from blobWithTag in blobsWithTags where maskTag == blobWithTag.Item1 select blobWithTag.Item2,
-                //        maskTag, historyCount));
-
                 if (!blobKeepers.Any(keeper => keeper.Tag == maskTag))
-                    blobKeepers.Add(new BlobKeeper(maskTag, historyCount));
+                    blobKeepers.Add(new BlobKeeperAssignment(maskTag, historyCount));
 
                 refreshActualFrame();
             });
@@ -571,9 +607,6 @@ namespace FlyCatcher
 
         private void VideoBox_Paint(object sender, PaintEventArgs e)
         {
-            //foreach (var mask in maskControlContainer.SelectedItems)
-            //    ((IMask<AForge.Point>)mask).DrawMask(e.Graphics);
-
             foreach (IMask<AForge.Point> mask in maskControlContainer.SelectedItems)
                 mask.DrawMask(e.Graphics);
 
@@ -609,54 +642,5 @@ namespace FlyCatcher
         private void displayMask(object sender, EventArgs e) => Refresh();
 
         #endregion
-
-        private void InitParams(object sender, DragEventArgs e)
-        {
-            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-
-            foreach (var item in fileList)
-            {
-                switch (Path.GetExtension(item))
-                {
-                    case ".config":
-                        initParams(item);
-                        break;
-                    case ".mask":
-                        initMasks(item);
-                        break;
-                    case ".output":
-                        initOutputFormat(item);
-                        break;
-                    case ".csv":
-                        initOutput(item);
-                        break;
-                    case ".state":
-                        initState(item);
-                        break;
-                    case ".jpg":
-                    case ".png":
-                    case ".bmp":
-                        initPictureGiverWithSeparatePhotoGiver(item);
-                        break;
-                    default:
-                        break;
-                }
-
-            }
-
-            refreshActualFrame();
-        }
-
-        private void MainForm_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Link;
-        }
-
-        private void parametrsValueChanged(object sender, EventArgs e)
-        {
-            refreshActualFrame();
-        }
-
-        //TODO: resize mask on videobox resize
     }
 }

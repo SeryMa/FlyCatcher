@@ -131,7 +131,7 @@ namespace FlyCatcher
         {
             get
             {
-                if (items.First.Next == null)
+                if (items.First.Next == null || First.CenterOfGravity == items.First.Next.Value.CenterOfGravity)
                     return new AForge.Point(0, 0);
                 else
                     return (First.CenterOfGravity - items.First.Next.Value.CenterOfGravity).Normalize();
@@ -280,8 +280,8 @@ namespace FlyCatcher
                 gr.DrawEllipse(new Pen(drawBrush), MathFunctions.getRectangleFromRadius(PredictNext.ConverseToPoint(), First.Rectangle.getDiameter()));
 
             //TODO: direction displayng doesn't work well
-            //if (format.HasFlag(Extensions.HighlightFormat.Direction))
-            //    gr.DrawLine(blobHighliter, First.CenterOfGravity.ConverseToPointF(), (PredictNext + First.CenterOfGravity.Multiply(3)).ConverseToPointF());
+            if (format.HasFlag(Constants.HighlightFormat.Direction))
+                gr.DrawLine(blobHighliter, First.CenterOfGravity.ConverseToPointF(), (PredictNext + Direction.Multiply(1000)).ConverseToPointF());
         }
 
         public void MakeInvalid() => Valid = false;

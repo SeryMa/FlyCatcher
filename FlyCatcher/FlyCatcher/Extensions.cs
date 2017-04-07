@@ -73,17 +73,13 @@ namespace FlyCatcher
         }
 
         public static AForge.Point Normalize(this AForge.Point point)
-        {
-            AForge.Point newPoint = point;
-            newPoint.NormalizeInPlace();
-            return newPoint;
-        }
-        public static void NormalizeInPlace(this AForge.Point point)
-        {
+        {            
             float dist = point.EuclideanNorm();
 
             point.X /= dist;
             point.Y /= dist;
+
+            return point;
         }
 
         public static AForge.Point Multiply(this AForge.Point point, double coef)
