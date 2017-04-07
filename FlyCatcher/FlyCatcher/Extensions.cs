@@ -13,39 +13,58 @@ namespace FlyCatcher
 {
     static class MathFunctions
     {
-        public static double getPercent(double min, double max, double actual) => 100 * ((actual - min) / (max - min));
+        public static double ValueToPercent(double min, double max, double actual) => 100 * ((actual - min) / (max - min));
+        public static double ValueToPercent(double max, double actual) => ValueToPercent(0, max, actual);
+        public static int PercentToValue(double min, double max, double percent) => (int)Math.Floor(min + ((percent / 100) * (max - min)));
+        public static int PercentToValue(double max, double percent) => PercentToValue(0, max, percent);
 
-        public static int getActual(double min, double max, double percent) => (int)Math.Floor(min + ((percent / 100) * (max - min)));
-
-        public static Rectangle recalculateRectangle(Rectangle rect, double actualWidth, double actualHeight, double desiredWidth, double desiredHeight)
+        public static RectangleF recalculateRectangle(RectangleF rect, double actualWidth, double actualHeight, double desiredWidth, double desiredHeight)
         {
             double biasWidth = desiredWidth / actualWidth;
             double biasHeight = desiredHeight / actualHeight;
             return new Rectangle((int)Math.Floor(rect.Left * biasWidth), (int)Math.Floor(rect.Top * biasHeight), (int)Math.Floor(rect.Width * biasWidth), (int)Math.Floor(rect.Height * biasHeight));
         }
 
-        public static Rectangle getRectangleFromRadius(Point center, double halfWidth, double halfHeight) => getRectangleFromRadius(center.X, center.Y, halfWidth, halfHeight);
-        public static Rectangle getRectangleFromRadius(double X, double Y, double halfWidth, double halfHeight) => getRectangle(X + halfWidth, Y + halfHeight, X - halfWidth, Y - halfHeight);
-        public static Rectangle getRectangle(double x1, double y1, double x2, double y2) => new Rectangle((int)Math.Min(x1, x2), (int)Math.Min(y1, y2), (int)Math.Abs(x1 - x2), (int)Math.Abs(y1 - y2));
-        public static Rectangle getRectangle(Point a, Point b) => getRectangle(a.X, a.Y, b.X, b.Y);
-        public static Rectangle getRectangle(Point p, double x, double y) => getRectangle(p.X, p.Y, x, y);
+        public static RectangleF recalculateRectangle(RectangleF percentRectangle, RectangleF boundingRectangle) => recalculateRectangle(percentRectangle, boundingRectangle.Size);
+        public static RectangleF recalculateRectangle(RectangleF percentRectangle, SizeF boundingRectangle)
+            => new RectangleF(
+                (percentRectangle.Left / 100 * boundingRectangle.Width),
+                (percentRectangle.Top / 100 * boundingRectangle.Height),
+                (percentRectangle.Width / 100 * boundingRectangle.Width),
+                (percentRectangle.Height / 100 * boundingRectangle.Height));
 
-        public static Point getCenter(this Rectangle rect) => new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
-        public static double getDiameter(this Rectangle rect) => (rect.Height + rect.Width) / 4.0;
+        public static RectangleF getPercentRectangle(RectangleF original, RectangleF desiredSize) => getPercentRectangle(original, desiredSize.Size);
+        public static RectangleF getPercentRectangle(RectangleF original, SizeF desiredSize)
+            => new RectangleF(
+                100*original.X / desiredSize.Width, 100*original.Y / desiredSize.Height,
+                100*original.Width / desiredSize.Width, 100*original.Height / desiredSize.Height);
 
-        public static bool isPointInEllipse(Point p, Rectangle rect) => isPointInEllipse(p.X, p.Y, rect);
-        public static bool isPointInEllipse(AForge.Point p, Rectangle rect) => isPointInEllipse(p.X, p.Y, rect);
-        public static bool isPointInEllipse(double x, double y, Rectangle rect)
+        public static Rectangle Round(this RectangleF rect) => new Rectangle((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+
+        public static RectangleF getRectangleFromRadius(PointF center, double halfWidth, double halfHeight) => getRectangleFromRadius(center.X, center.Y, halfWidth, halfHeight);
+        public static RectangleF getRectangleFromRadius(PointF center, double halfSize) => getRectangleFromRadius(center.X, center.Y, halfSize, halfSize);
+        public static RectangleF getRectangleFromRadius(double X, double Y, double halfWidth, double halfHeight) => getRectangle(X + halfWidth, Y + halfHeight, X - halfWidth, Y - halfHeight);
+        public static RectangleF getRectangle(double x1, double y1, double x2, double y2) => new RectangleF((float)Math.Min(x1, x2), (float)Math.Min(y1, y2), (float)Math.Abs(x1 - x2), (float)Math.Abs(y1 - y2));
+        public static RectangleF getRectangle(PointF a, PointF b) => getRectangle(a.X, a.Y, b.X, b.Y);
+        public static RectangleF getRectangle(PointF p, double x, double y) => getRectangle(p.X, p.Y, x, y);
+
+        public static PointF getCenter(this RectangleF rect) => new PointF(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+        public static double getDiameter(this RectangleF rect) => (rect.Height + rect.Width) / 4.0;
+        public static double getDiameter(this Rectangle rect) => ((RectangleF)rect).getDiameter();
+
+        public static bool isPointInEllipse(PointF p, RectangleF rect) => isPointInEllipse(p.X, p.Y, rect);
+        public static bool isPointInEllipse(AForge.DoublePoint p, RectangleF rect) => isPointInEllipse(p.X, p.Y, rect);
+        public static bool isPointInEllipse(double x, double y, RectangleF rect)
         {
-            Point center = rect.getCenter();
+            PointF center = rect.getCenter();
             return (Math.Pow((x - center.X) / (rect.Width / 2), 2) + Math.Pow((y - center.Y) / (rect.Height / 2), 2)) <= 1;
         }
 
-        public static bool isPointInRectangle(Point p, Rectangle rect) => isPointInRectangle(p.X, p.Y, rect);
-        public static bool isPointInRectangle(AForge.Point p, Rectangle rect) => isPointInRectangle(p.X, p.Y, rect);
-        public static bool isPointInRectangle(double x, double y, Rectangle rect) => ((y >= rect.Left && y <= rect.Right) && (x >= rect.Top && x <= rect.Bottom));
+        public static bool isPointInRectangle(PointF p, RectangleF rect) => isPointInRectangle(p.X, p.Y, rect);
+        public static bool isPointInRectangle(AForge.DoublePoint p, RectangleF rect) => isPointInRectangle(p.X, p.Y, rect);
+        public static bool isPointInRectangle(double x, double y, RectangleF rect) => ((x >= rect.Left && x <= rect.Right) && (y >= rect.Top && y <= rect.Bottom));
 
-        public static double getDistance(this Point pointA, Point pointB)
+        public static double getDistanceTo(this Point pointA, Point pointB)
         {
             return Math.Sqrt(
                         Math.Pow(pointA.X - pointB.X, 2) +
@@ -100,10 +119,7 @@ namespace FlyCatcher
                 fun();
         }
 
-        public static void ApplyInPlace(this Grayscale scale, Bitmap image)
-        {
-            image = scale.Apply(image);
-        }
+        public static void ApplyInPlace(this Grayscale scale, Bitmap image) => image = scale.Apply(image);
 
         public static Bitmap convertPixelFormat(this Bitmap image, PixelFormat format) => AForge.Imaging.Image.Clone(image, format);
 
@@ -148,17 +164,16 @@ namespace FlyCatcher
         public static AForge.Point Converse(this PointF point) => new AForge.Point(point.X, point.Y);
         public static AForge.Point Converse(this Point point) => new AForge.Point(point.X, point.Y);
 
-        public static void ActualizeBlobKeeper(IKeeper<Blob, double, double> blobKeeper, IEnumerable<Blob> blobs)
+        public static void ActualizeBlobKeeper(IKeeper<Blob, double, double, AForge.Point> blobKeeper, IEnumerable<Blob> blobs)
         {
             blobKeeper.ActualizeData(blobs);
         }
-        public static void RefreshBlobKeeper(IKeeper<Blob, double, double> blobKeeper, IEnumerable<Blob> blobs)
+        public static void RefreshBlobKeeper(IKeeper<Blob, double, double, AForge.Point> blobKeeper, IEnumerable<Blob> blobs)
         {
             blobKeeper.Refresh(blobs);
         }
 
         static Random rand = new Random();
-
         public static string GenerateString(int size)
         {
             char[] chars = new char[size];
@@ -226,7 +241,7 @@ namespace FlyCatcher
         public static bool isSameAs(this double numA, double numB) => numA.isSameAs(numB, 0.0000000001);
         public static bool isSameAs(this double numA, double numB, double precision) => (Math.Abs(numA - numB) < precision);
 
-        public static int ParseBool(bool pred) => pred ? 1 : 0;        
+        public static int ParseBool(this bool pred) => pred ? 1 : 0;
     }
 
     static class Constants
@@ -246,10 +261,10 @@ namespace FlyCatcher
         public const string MaskFileExtension = ".mask";
         public const string OutputFileExtension = ".output";
         public const string CSVFileExtension = ".csv";
-        public const string StateFileExtension = ".state";        
+        public const string StateFileExtension = ".state";
 
         [Flags]
-        public enum OutputFormat { None = 0, Objects = 1, AverageSpeed = 2, ImmediateSpeed = 4, Position = 8, Prediction = 16, ImmadiateArea = 32, AverageArea = 64}
+        public enum OutputFormat { None = 0, Objects = 1, AverageSpeed = 2, ImmediateSpeed = 4, Position = 8, Prediction = 16, ImmadiateArea = 32, AverageArea = 64 }
         public static Dictionary<OutputFormat, string> OutputTag = new Dictionary<OutputFormat, string>()
         {
             { OutputFormat.None, "" },
@@ -259,7 +274,7 @@ namespace FlyCatcher
             { OutputFormat.Position, "positinon" },
             { OutputFormat.Prediction, "prediction" },
             { OutputFormat.ImmadiateArea, "imm_area" },
-            { OutputFormat.AverageArea, "avg_area" }            
+            { OutputFormat.AverageArea, "avg_area" }
         };
 
         [Flags]
@@ -271,9 +286,8 @@ namespace FlyCatcher
             {HighlightFormat.Prediction, "mark_prediction" },
             {HighlightFormat.Trace, "mark_trace" },
             {HighlightFormat.Tag, "mark_tag" },
-            {HighlightFormat.Direction, "mark_direction" },            
+            {HighlightFormat.Direction, "mark_direction" },
         };
     }
-
 }
 

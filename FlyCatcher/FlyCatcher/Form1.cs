@@ -28,35 +28,40 @@ namespace FlyCatcher
 {
     public partial class MainForm : Form
     {
-        private IPictureGiver<Bitmap> pictureGiver;
-        private IPicturePreProcessor<Bitmap> pictureProcessor;
+        private IGiver<Bitmap> pictureGiver;
+        private IPreProcessor<Bitmap> pictureProcessor;
         private ICounter<Bitmap, Blob, AForge.Point> blobCounter;
-        private List<IKeeper<Blob, double, double>> blobKeepers;
-
-        private StreamReader ActualState;
-
-        private StreamWriter Output;
-        private FileStream tmpFile;
-
+        private List<IKeeper<Blob, double, double, AForge.Point>> blobKeepers;
 
         internal bool shouldInvert { get { return invertCheckBox.Checked; } }
+        internal bool filterByArea { get { return filterStyleCheckBox.Checked; } }
         internal int upperBoundValue { get { return (int)blobUpperBound.Value; } }
         internal int lowerBoundValue { get { return (int)blobLowerBound.Value; } }
+        
+        internal IEnumerable<IMask<AForge.Point>> masks { get { return maskControlContainer.Items.OfType<IMask<AForge.Point>>(); } }
 
-        private Pen blobHighliter = new Pen(Color.Coral, 5);
-        private Pen maskHighliter = new Pen(Color.Red, 4);
+        internal double redCoeficient { get { return (double)redCoeficientControl.Value; } }
+        internal double greenCoeficient { get { return (double)greenCoeficientControl.Value; } }
+        internal double blueCoeficient { get { return (double)blueCoeficientControl.Value; } }
 
         private int historyCount;
 
-        private Constants.OutputFormat outputFormat;
-        private Constants.HighlightFormat highlightFormat;
+        public MainForm()
+        {
+            InitializeComponent();
+
+            //TODO: make init
+            debugInit();
+        }               
+
+        #region Init
 
         private void debugInit()
         {
             pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", ".jpg", 5, 600);
             pictureProcessor = new BitmapPreProcessor(this);
             blobCounter = new PictureBlobCounter(this);
-            blobKeepers = new List<IKeeper<Blob, double, double>>();
+            blobKeepers = new List<IKeeper<Blob, double, double, AForge.Point>>();
 
             initParams(parameters: null);
 
@@ -94,7 +99,7 @@ namespace FlyCatcher
         {
             outputFormat = Constants.OutputFormat.None;
 
-            foreach (var tag in Constants.OutputTag)            
+            foreach (var tag in Constants.OutputTag)
                 outputFormat |= (getParameter(tag.Value, parameters, true, bool.Parse) ? tag.Key : Constants.OutputFormat.None);
         }
 
@@ -104,19 +109,19 @@ namespace FlyCatcher
             highlightFormat = Constants.HighlightFormat.None;
 
             foreach (var tag in Constants.HighlightTag)
-                highlightFormat |= (getParameter(tag.Value, parameters, false, bool.Parse) ? tag.Key: Constants.HighlightFormat.None);
+                highlightFormat |= (getParameter(tag.Value, parameters, false, bool.Parse) ? tag.Key : Constants.HighlightFormat.None);
 
             //Special case which default value should be true, not false like with the others
-            highlightFormat |= (getParameter(Constants.HighlightTag[Constants.HighlightFormat.Object], parameters, true, bool.Parse) ? Constants.HighlightFormat.Object : Constants.HighlightFormat.None);            
+            highlightFormat |= (getParameter(Constants.HighlightTag[Constants.HighlightFormat.Object], parameters, true, bool.Parse) ? Constants.HighlightFormat.Object : Constants.HighlightFormat.None);
         }
 
         private void initMasks(string path) => initMask(getParameters(path));
         private void initMask(ILookup<string, string> parameters)
         {
             if (getParameter("clean", parameters, false, bool.Parse))
-            {
-                blobCounter.Masks.Clear();
+            {                
                 maskControlContainer.Items.Clear();
+                blobKeepers.Clear();
             }
 
             if (parameters != null)
@@ -127,9 +132,9 @@ namespace FlyCatcher
                         foreach (var mask in param)
                         {
                             var pars = mask.Split(' ');
-                            Rectangle rect = MathFunctions.getRectangle(int.Parse(pars[1]), int.Parse(pars[2]), int.Parse(pars[3]), int.Parse(pars[4]));
+                            RectangleF rect = MathFunctions.getRectangle(float.Parse(pars[1]), float.Parse(pars[2]), float.Parse(pars[3]), float.Parse(pars[4]));
                             //TODO: better parsing here...
-
+                            
                             switch (param.Key)
                             {
                                 case "ellipse":
@@ -147,7 +152,7 @@ namespace FlyCatcher
                 }
         }
 
-        private void initOutput(string path)        
+        private void initOutput(string path)
         {
             if (Output != null)
                 Output.Close();
@@ -157,43 +162,22 @@ namespace FlyCatcher
 
         private void initState(string path)
         {
-            if (ActualState!= null)            
+            if (ActualState != null)
                 ActualState.Close();
-            
+
             //TODO: copy previous state
             ActualState = new StreamReader(path);
         }
+        #endregion
 
-        public MainForm()
-        {
-            InitializeComponent();
+        #region Output
+        private StreamReader ActualState;
 
-            //TODO: make init
-            debugInit();
-        }
+        private StreamWriter Output;
+        private FileStream tmpFile;
 
-        void refreshActualFrame() => proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);
-
-        void proccesFrame(Bitmap image, Action<IKeeper<Blob, double, double>, IEnumerable<Blob>> action)
-        {
-            Bitmap rawImage = image;
-            Bitmap processedImage = processImage(rawImage);
-
-            IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
-
-            blobKeepers.ForEach(blobKeeper => action(blobKeeper, from blobWithTag in blobsWithTags
-                                                                 where blobKeeper.Tag == blobWithTag.Item1
-                                                                 select blobWithTag.Item2));
-
-            //TOOD: make only one videobox, where proccessed & raw image & introduce switching between them
-
-            if (DisplayOriginal.Checked)            
-                highlightBlobs(rawImage);
-            else
-                highlightBlobs(processedImage);
-        }
-
-        Bitmap processImage(Bitmap image) => pictureProcessor.processImage(image);
+        private Constants.OutputFormat outputFormat;
+        private Constants.HighlightFormat highlightFormat;        
 
         void highlightBlobs(Bitmap image)
         {
@@ -218,7 +202,7 @@ namespace FlyCatcher
         {
             if (Output == null) return;
 
-            Output.Write($"{frame}{Constants.Delimeter}");            
+            Output.Write($"{frame}{Constants.Delimeter}");
 
             foreach (var blobKeeper in blobKeepers)
                 blobKeeper.PrintOut(Output, outputFormat);
@@ -242,6 +226,31 @@ namespace FlyCatcher
 
             Output.WriteLine();
         }
+        #endregion
+
+        #region FlowControl
+        void refreshActualFrame() => proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);
+
+        void proccesFrame(Bitmap image, Action<IKeeper<Blob, double, double, AForge.Point>, IEnumerable<Blob>> action)
+        {
+            Bitmap rawImage = image;
+            Bitmap processedImage = processImage(rawImage);
+
+            IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
+
+            blobKeepers.ForEach(blobKeeper => action(blobKeeper, from blobWithTag in blobsWithTags
+                                                                 where blobKeeper.Tag == blobWithTag.Item1
+                                                                 select blobWithTag.Item2));
+
+            //TOOD: make only one videobox, where proccessed & raw image & introduce switching between them
+
+            if (DisplayOriginal.Checked)
+                highlightBlobs(rawImage);
+            else
+                highlightBlobs(processedImage);
+        }
+
+        Bitmap processImage(Bitmap image) => pictureProcessor.processItem(image);
 
         private void Stop()
         {
@@ -275,14 +284,14 @@ namespace FlyCatcher
         {
             Console.WriteLine("Starting");
             StartPauseButton.Text = "Pause";
-            if (actualState == state.stoped)                          
+            if (actualState == state.stoped)
                 RunAnalysis();
-           
+
             actualState = state.runing;
             Console.WriteLine("Running");
         }
 
-        private enum state { stoped, runing, paused}
+        private enum state { stoped, runing, paused }
         state actualState;
         private void PauseStartButton_Click(object sender, EventArgs e)
         {
@@ -308,7 +317,7 @@ namespace FlyCatcher
                 case state.paused:
                     Stop();
                     break;
-                case state.stoped:                
+                case state.stoped:
                 default:
                     break;
             }
@@ -319,7 +328,7 @@ namespace FlyCatcher
             actualState = state.runing;
 
             new Task(() =>
-            {                
+            {
                 foreach (Bitmap picture in pictureGiver)
                 {
                     switch (actualState)
@@ -328,13 +337,13 @@ namespace FlyCatcher
                             proccesFrame(picture, Extensions.ActualizeBlobKeeper);
 
                             printOut(pictureGiver.actualIndex);
-                            videoSlider.crossThreadOperation(() => adjustSliders());                            
+                            videoSlider.crossThreadOperation(() => adjustSliders());
 
                             break;
                         case state.stoped:
                         case state.paused:
-                            //TODO: pausing handling - something better than active waiting for the switch of state.
-                            //Althought there is only one Task with the code, so the active waiting in paused state is not so big overhead...
+                        //TODO: pausing handling - something better than active waiting for the switch of state.
+                        //Althought there is only one Task with the code, so the active waiting in paused state is not so big overhead...
                         default:
                             break;
                     }
@@ -352,11 +361,14 @@ namespace FlyCatcher
             Console.WriteLine("Refreshing...");
             refreshActualFrame();
         }
+        #endregion
 
+        #region VideoControl
         int actualPicture
         {
             get { return pictureGiver.actualIndex; }
-            set {
+            set
+            {
                 if (value > pictureGiver.RunTo)
                 {
                     pictureGiver.actualIndex = pictureGiver.RunTo;
@@ -370,7 +382,7 @@ namespace FlyCatcher
         }
         private void videoSlider_Scroll(object sender, EventArgs e)
         {
-            actualPicture = MathFunctions.getActual(pictureGiver.RunFrom, pictureGiver.RunTo, videoSlider.Value);
+            actualPicture = MathFunctions.PercentToValue(pictureGiver.RunFrom, pictureGiver.RunTo, videoSlider.Value);
             actualIndex.Value = actualPicture;
 
             refreshActualFrame();
@@ -412,7 +424,7 @@ namespace FlyCatcher
 
         private void adjustSliders()
         {
-            videoSlider.Value = (int)Math.Floor(MathFunctions.getPercent(pictureGiver.RunFrom, pictureGiver.RunTo, actualPicture));
+            videoSlider.Value = (int)Math.Floor(MathFunctions.ValueToPercent(pictureGiver.RunFrom, pictureGiver.RunTo, actualPicture));
 
             checkForOverlap();
         }
@@ -428,24 +440,28 @@ namespace FlyCatcher
             if (runAnalysisTo.Value < runAnalysisFrom.Value)
                 runAnalysisTo.Value = runAnalysisFrom.Value;
         }
+        #endregion
 
         #region Masking
 
+        private static Pen maskHighliter = new Pen(Color.Red, 4);
         enum DrawStyle { None, Ellipse, Rectangle, Curve };
+
         DrawStyle actualStyle = DrawStyle.None;
         bool isOkayToDraw() { return actualStyle != DrawStyle.None; }
         string maskTag { get { return maskTagBox.Text; } }
-        Rectangle drawRectangle;
-        //TOOD: get radius or dimensionsfrom user
+        RectangleF drawRectangle;
+        
         float halfWidth { get { return (float)maskWidth.Value; } set { maskWidth.Value = (decimal)value; } }
         float halfHeight { get { return (float)maskHeight.Value; } set { maskHeight.Value = (decimal)value; } }
         float wheelCorrection = 1200;
+
         delegate void drawEvent();
 
-        private void addMask(DrawStyle style, Rectangle rect, string tag)
+        private void addMask(DrawStyle style, RectangleF percentRectangle, string tag)
         {
             IMask<AForge.Point> mask = null;
-            Rectangle realRectangle = MathFunctions.recalculateRectangle(rect, VideoBox.Width, VideoBox.Height, VideoBox.Image.Width, VideoBox.Image.Height);
+            RectangleF realRectangle = MathFunctions.recalculateRectangle(percentRectangle, VideoBox.Image.Size);
 
             switch (style)
             {
@@ -454,10 +470,10 @@ namespace FlyCatcher
                     //containFunction = ???
                     break;
                 case DrawStyle.Ellipse:
-                    mask = new EllipMask(realRectangle, rect, tag);
+                    mask = new EllipMask(realRectangle, percentRectangle, tag);
                     break;
                 case DrawStyle.Rectangle:
-                    mask = new RectMask(realRectangle, rect, tag);
+                    mask = new RectMask(realRectangle, percentRectangle, tag);
                     break;
                 //because of 'isOkayToDraw' testing in 'maskingEventHanlder', this part of switch ought to never occur,
                 //therefore 'containFunction' should be assigned properly
@@ -465,8 +481,7 @@ namespace FlyCatcher
                 default:
                     break;
             }
-
-            blobCounter.Masks.Add(mask);
+            
             maskControlContainer.Items.Add(mask);
         }
 
@@ -504,22 +519,50 @@ namespace FlyCatcher
             });
         }
 
+        private void removeKeepers()
+        {
+            blobKeepers.RemoveAll(keeper =>
+            {
+                foreach (IMask<AForge.Point> mask in maskControlContainer.Items)
+                    if (mask.Tag == keeper.Tag)
+                        return false;
+
+                return true;
+            });
+
+        }
+        private void removeMasks(object sender, EventArgs e)
+        {
+            for (int i = maskControlContainer.SelectedItems.Count - 1; i >= 0; i--)
+            {
+                maskControlContainer.Items.Remove(maskControlContainer.SelectedItems[i]);
+
+            }
+
+            removeKeepers();
+
+            refreshActualFrame();
+        }
+
         private void applyMask(object sender, MouseEventArgs e)
         {
             maskingEventHandler(() =>
             {
-                addMask(actualStyle, drawRectangle, maskTag);
-                
-                //TOOD: high code duality with 'processActualFrame'
-                Bitmap rawImage = pictureGiver[actualPicture];
-                Bitmap processedImage = processImage(rawImage);
+                addMask(actualStyle, MathFunctions.getPercentRectangle(drawRectangle, VideoBox.Size), maskTag);
 
-                IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
+                ////TOOD: high code duality with 'processActualFrame'
+                //Bitmap rawImage = pictureGiver[actualPicture];
+                //Bitmap processedImage = processImage(rawImage);
 
-                blobKeepers.Add(
-                    new BlobKeeper(
-                        from blobWithTag in blobsWithTags where maskTag == blobWithTag.Item1 select blobWithTag.Item2,
-                        maskTag, historyCount));
+                //IEnumerable<Tuple<string, Blob>> blobsWithTags = blobCounter.CountItems(processedImage);
+
+                //blobKeepers.Add(
+                //    new BlobKeeper(
+                //        from blobWithTag in blobsWithTags where maskTag == blobWithTag.Item1 select blobWithTag.Item2,
+                //        maskTag, historyCount));
+
+                if (!blobKeepers.Any(keeper => keeper.Tag == maskTag))
+                    blobKeepers.Add(new BlobKeeper(maskTag, historyCount));
 
                 refreshActualFrame();
             });
@@ -528,8 +571,11 @@ namespace FlyCatcher
 
         private void VideoBox_Paint(object sender, PaintEventArgs e)
         {
-            foreach (var mask in maskControlContainer.SelectedItems)
-                ((IMask<AForge.Point>)mask).drawMask(e.Graphics);
+            //foreach (var mask in maskControlContainer.SelectedItems)
+            //    ((IMask<AForge.Point>)mask).DrawMask(e.Graphics);
+
+            foreach (IMask<AForge.Point> mask in maskControlContainer.SelectedItems)
+                mask.DrawMask(e.Graphics);
 
             switch (actualStyle)
             {
@@ -541,7 +587,7 @@ namespace FlyCatcher
                     e.Graphics.DrawEllipse(maskHighliter, drawRectangle);
                     break;
                 case DrawStyle.Rectangle:
-                    e.Graphics.DrawRectangle(maskHighliter, drawRectangle);
+                    e.Graphics.DrawRectangle(maskHighliter, drawRectangle.Round());
                     break;
                 case DrawStyle.None:
                 default:
@@ -606,7 +652,7 @@ namespace FlyCatcher
             e.Effect = DragDropEffects.Link;
         }
 
-        private void DisplayOriginal_CheckedChanged(object sender, EventArgs e)
+        private void parametrsValueChanged(object sender, EventArgs e)
         {
             refreshActualFrame();
         }

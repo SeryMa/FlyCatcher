@@ -10,43 +10,46 @@ using System.Drawing.Imaging;
 
 namespace FlyCatcher
 {
-    interface IPicturePreProcessor<T>
+    interface IPreProcessor<T>
     {
-        void processImageInPlace(T image);
-        T processImage(T image);
+        T processItem(T item);
     }
 
-    class BitmapPreProcessor : IPicturePreProcessor<Bitmap>
+    class BitmapPreProcessor : IPreProcessor<Bitmap>
     {
         private MainForm owner;
         private Invert inv;
-        private OtsuThreshold thresholding;
+        private BaseInPlacePartialFilter thresholding;
+
+        private Grayscale gr;
+        private Grayscale grayscale
+        {
+            get
+            {
+                if (gr == null ||
+                    gr.RedCoefficient != owner.redCoeficient ||
+                    gr.GreenCoefficient != owner.greenCoeficient ||
+                    gr.BlueCoefficient != owner.blueCoeficient)
+                    gr = new Grayscale(owner.redCoeficient, owner.greenCoeficient, owner.blueCoeficient);
+
+                return gr;
+            }
+        }
+
 
         public BitmapPreProcessor(MainForm owner)
         {
             this.owner = owner;
 
             inv = new Invert();
+
             thresholding = new OtsuThreshold();
+            //thresholding = new Threshold();
+            //thresholding = new SISThreshold();
         }
 
         bool shouldInvert { get { return owner.shouldInvert; } }
 
-        public Bitmap processImage(Bitmap image)
-        {
-            Bitmap pictureToReturn = AForge.Imaging.Image.Clone(image);           
-            
-            if (shouldInvert) inv.ApplyInPlace(pictureToReturn);            
-
-            //return thresholding.Apply(Grayscale.CommonAlgorithms.Y.Apply(pictureToReturn));
-            //return thresholding.Apply(Grayscale.CommonAlgorithms.RMY.Apply(pictureToReturn));
-            return thresholding.Apply(Grayscale.CommonAlgorithms.BT709.Apply(pictureToReturn));
-            //TOOD: let the choice of algorithm up to the user
-        }
-
-        public void processImageInPlace(Bitmap image)
-        {
-            image = processImage(image);
-        }
+        public Bitmap processItem(Bitmap image) => thresholding.Apply(grayscale.Apply(shouldInvert ? inv.Apply(image) : image));
     }
 }

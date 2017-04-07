@@ -12,11 +12,11 @@ using AForge.Imaging.Filters;
 
 namespace FlyCatcher
 {
-    interface IKeeper<ItemType, MeasureType, DistanceType> where MeasureType : IComparable where DistanceType : IComparable
+    interface IKeeper<ItemType, MeasureType, DistanceType, PositionType> where MeasureType : IComparable where DistanceType : IComparable
     {
-        ICollection<IData<ItemType, MeasureType, DistanceType>> ItemsData { get; }
+        ICollection<IData<ItemType, MeasureType, DistanceType, PositionType>> ItemsData { get; }
 
-        string Tag { get; }        
+        string Tag { get; }
 
         void ActualizeData(IEnumerable<ItemType> items);
         void Refresh(IEnumerable<ItemType> items);
@@ -28,13 +28,13 @@ namespace FlyCatcher
         void Draw(Graphics gr, Constants.HighlightFormat format);
     }
 
-    class BlobKeeper : IKeeper<Blob, double, double>
+    class BlobKeeper : IKeeper<Blob, double, double, AForge.Point>
     {
         /// <summary>
         /// Collection of stored Blobs data.
         /// </summary>
-        public ICollection<IData<Blob, double, double>> ItemsData { get { return itemsData; }}
-        private List<IData<Blob, double, double>> itemsData;
+        public ICollection<IData<Blob, double, double, AForge.Point>> ItemsData { get { return itemsData; } }
+        private List<IData<Blob, double, double, AForge.Point>> itemsData;
 
         private int historyCount;
 
@@ -50,6 +50,22 @@ namespace FlyCatcher
             this.historyCount = historyCount;
         }
 
+        public BlobKeeper(string tag, int historyCount)
+        {
+            Init(tag);
+
+            this.historyCount = historyCount;
+        }
+
+        /// <summary>
+        /// Inicialize ItemsData with new tag.
+        /// </summary>       
+        /// <param name="tag">Tag that is assigned to Tag property</param>
+        public void Init(string tag)
+        {
+            Tag = tag;
+        }
+
         /// <summary>
         /// Inicialize ItemsData with new statring Enumeration.
         /// </summary>
@@ -58,7 +74,7 @@ namespace FlyCatcher
         public void Init(IEnumerable<Blob> items, string tag)
         {
             Refresh(items);
-            
+
             Tag = tag;
         }
 
@@ -68,7 +84,7 @@ namespace FlyCatcher
         /// <param name="items">Enumeration is converted to IData<Blob> and inicialize ItemsData</param>
         public void Refresh(IEnumerable<Blob> items)
         {
-            itemsData = new List<IData<Blob, double, double>>();
+            itemsData = new List<IData<Blob, double, double, AForge.Point>>();
 
             foreach (var blob in items)
                 itemsData.Add(new BlobData(historyCount, blob, Tag));
@@ -76,12 +92,12 @@ namespace FlyCatcher
             matrix = new SquareMatrix(10);
         }
 
-        public void ActualizeData(IEnumerable<Blob> items) => ActualizeDataAssignmentTask(items.ToArray()); 
-
         /// <summary>
         /// Function that should update the collection ItemsData with new data.
         /// </summary>
         /// <param name="items">The items that should perform the updating</param>
+        public void ActualizeData(IEnumerable<Blob> items) => ActualizeDataAssignmentTask(items.ToArray());
+
         public void ActualizeDataClosestFirst(Blob[] items)
         {
             int index = 0;
@@ -90,9 +106,7 @@ namespace FlyCatcher
             //TODO: watch out for duplicates
             //when two flies occupy the same space I can lose info about one of them
             foreach (var BlobData in ItemsData)
-            {
                 if (items.Any(x => x != null))
-                {
                     for (int i = 0; i < items.Length; i++)
                     {
                         if (items[i] != null)
@@ -112,17 +126,12 @@ namespace FlyCatcher
                         distMatch = double.PositiveInfinity;
                     }
 
-                }
-            }
-        }        
+        }
 
         private SquareMatrix matrix = new SquareMatrix(10);
-        private double getMatch(IData<Blob, double, double> agent, Blob blob)
-        {
-            return agent.GetMatch(blob);
-        }
+        private double getMatch(IData<Blob, double, double, AForge.Point> agent, Blob blob) => agent.GetMatch(blob);
         public void ActualizeDataAssignmentTask(Blob[] items)
-        {            
+        {
             var assignment = matrix.GetPerfectAssignment(itemsData, items, getMatch);
 
             foreach (var properMatch in assignment[0])
@@ -131,22 +140,18 @@ namespace FlyCatcher
             foreach (var taskMatch in assignment[1])
                 itemsData.Add(new BlobData(historyCount, items[taskMatch.Item2], Tag));
 
-            //TODO: this is wrong...
-            //foreach (var agentMatch in assignment[2])
-            //    itemsData[agentMatch.Item1].AddItem(itemsData[agentMatch.Item1].First);
-
             //TODO: this is not so wrong...
             foreach (var agentMatch in assignment[2])
-                itemsData[agentMatch.Item1].makeInvalid();
+                itemsData[agentMatch.Item1].MakeInvalid();
         }
 
         public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
         {
             if (format.HasFlag(Constants.OutputFormat.Objects))
-                writer.Write($"{itemsData.Where(dta => dta.valid).Count()}{Constants.Delimeter}");
+                writer.Write($"{itemsData.Where(dta => dta.Valid).Count()}{Constants.Delimeter}");
 
             foreach (var blobData in itemsData)
-                blobData.PrintOut(writer, format);            
+                blobData.PrintOut(writer, format);
         }
         public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
         {
@@ -166,8 +171,8 @@ namespace FlyCatcher
         }
         public void Draw(Graphics gr, Constants.HighlightFormat format)
         {
-            foreach (var blobData in itemsData.Where(dta => dta.valid))
-                blobData.Draw(gr, format);   
+            foreach (var blobData in itemsData.Where(dta => dta.Valid))
+                blobData.Draw(gr, format);
         }
     }
 }

@@ -44,6 +44,7 @@
             this.maskTagBox = new System.Windows.Forms.TextBox();
             this.maskControlContainer = new System.Windows.Forms.ListBox();
             this.videoGroupBox = new System.Windows.Forms.GroupBox();
+            this.StopButton = new System.Windows.Forms.Button();
             this.endingBias = new System.Windows.Forms.CheckBox();
             this.beginingBias = new System.Windows.Forms.CheckBox();
             this.runAnalysisTo = new System.Windows.Forms.NumericUpDown();
@@ -52,12 +53,16 @@
             this.videoSlider = new System.Windows.Forms.TrackBar();
             this.StartPauseButton = new System.Windows.Forms.Button();
             this.VideoBox = new System.Windows.Forms.PictureBox();
-            this.MaskContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.MaskContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.applyMaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MaskCIrcle = new System.Windows.Forms.ToolStripMenuItem();
             this.MaskRectangle = new System.Windows.Forms.ToolStripMenuItem();
             this.drawCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.controlGroupBox = new System.Windows.Forms.GroupBox();
+            this.filterStyleCheckBox = new System.Windows.Forms.CheckBox();
+            this.blueCoeficientControl = new System.Windows.Forms.NumericUpDown();
+            this.greenCoeficientControl = new System.Windows.Forms.NumericUpDown();
+            this.redCoeficientControl = new System.Windows.Forms.NumericUpDown();
             this.DisplayOriginal = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.maskHeight = new System.Windows.Forms.NumericUpDown();
@@ -67,7 +72,7 @@
             this.blobLowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.StopButton = new System.Windows.Forms.Button();
+            this.MaskRemoval = new System.Windows.Forms.Button();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
@@ -80,8 +85,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.videoSlider)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).BeginInit();
-            this.MaskContextMenuStrip1.SuspendLayout();
+            this.MaskContextMenuStrip.SuspendLayout();
             this.controlGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.blueCoeficientControl)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.greenCoeficientControl)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.redCoeficientControl)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.maskHeight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.maskWidth)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.blobUpperBound)).BeginInit();
@@ -164,9 +172,9 @@
             // HighlightBlob
             // 
             this.HighlightBlob.Controls.Add(this.highlightBlobPictureBox);
-            this.HighlightBlob.Location = new System.Drawing.Point(12, 239);
+            this.HighlightBlob.Location = new System.Drawing.Point(12, 318);
             this.HighlightBlob.Name = "HighlightBlob";
-            this.HighlightBlob.Size = new System.Drawing.Size(92, 220);
+            this.HighlightBlob.Size = new System.Drawing.Size(92, 141);
             this.HighlightBlob.TabIndex = 10;
             this.HighlightBlob.TabStop = false;
             this.HighlightBlob.Text = "Highlight";
@@ -177,7 +185,7 @@
             this.highlightBlobPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.highlightBlobPictureBox.Location = new System.Drawing.Point(3, 16);
             this.highlightBlobPictureBox.Name = "highlightBlobPictureBox";
-            this.highlightBlobPictureBox.Size = new System.Drawing.Size(86, 201);
+            this.highlightBlobPictureBox.Size = new System.Drawing.Size(86, 122);
             this.highlightBlobPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.highlightBlobPictureBox.TabIndex = 14;
             this.highlightBlobPictureBox.TabStop = false;
@@ -185,6 +193,7 @@
             // maskGroupBox
             // 
             this.maskGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.maskGroupBox.Controls.Add(this.MaskRemoval);
             this.maskGroupBox.Controls.Add(this.maskTagBox);
             this.maskGroupBox.Controls.Add(this.maskControlContainer);
             this.maskGroupBox.Location = new System.Drawing.Point(764, 13);
@@ -207,12 +216,11 @@
             // 
             // maskControlContainer
             // 
-            this.maskControlContainer.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.maskControlContainer.FormattingEnabled = true;
             this.maskControlContainer.Location = new System.Drawing.Point(3, 38);
             this.maskControlContainer.Name = "maskControlContainer";
             this.maskControlContainer.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.maskControlContainer.Size = new System.Drawing.Size(146, 420);
+            this.maskControlContainer.Size = new System.Drawing.Size(146, 394);
             this.maskControlContainer.TabIndex = 0;
             this.maskControlContainer.SelectedIndexChanged += new System.EventHandler(this.displayMask);
             // 
@@ -237,6 +245,17 @@
             this.videoGroupBox.TabIndex = 3;
             this.videoGroupBox.TabStop = false;
             this.videoGroupBox.Text = "Video";
+            // 
+            // StopButton
+            // 
+            this.StopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.StopButton.Location = new System.Drawing.Point(59, 435);
+            this.StopButton.Name = "StopButton";
+            this.StopButton.Size = new System.Drawing.Size(47, 20);
+            this.StopButton.TabIndex = 14;
+            this.StopButton.Text = "Stop";
+            this.StopButton.UseVisualStyleBackColor = true;
+            this.StopButton.Click += new System.EventHandler(this.StopButton_Click);
             // 
             // endingBias
             // 
@@ -344,7 +363,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.VideoBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.VideoBox.ContextMenuStrip = this.MaskContextMenuStrip1;
+            this.VideoBox.ContextMenuStrip = this.MaskContextMenuStrip;
             this.VideoBox.Location = new System.Drawing.Point(6, 19);
             this.VideoBox.Name = "VideoBox";
             this.VideoBox.Size = new System.Drawing.Size(635, 362);
@@ -356,16 +375,16 @@
             this.VideoBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Draw);
             this.VideoBox.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.ChangeDimensions);
             // 
-            // MaskContextMenuStrip1
+            // MaskContextMenuStrip
             // 
-            this.MaskContextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MaskContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.applyMaskToolStripMenuItem,
             this.MaskCIrcle,
             this.MaskRectangle,
             this.drawCurveToolStripMenuItem});
-            this.MaskContextMenuStrip1.Name = "contextMenuStrip1";
-            this.MaskContextMenuStrip1.Size = new System.Drawing.Size(154, 92);
-            this.MaskContextMenuStrip1.Text = "Set mask";
+            this.MaskContextMenuStrip.Name = "contextMenuStrip1";
+            this.MaskContextMenuStrip.Size = new System.Drawing.Size(154, 92);
+            this.MaskContextMenuStrip.Text = "Set mask";
             // 
             // applyMaskToolStripMenuItem
             // 
@@ -398,6 +417,10 @@
             // 
             // controlGroupBox
             // 
+            this.controlGroupBox.Controls.Add(this.filterStyleCheckBox);
+            this.controlGroupBox.Controls.Add(this.blueCoeficientControl);
+            this.controlGroupBox.Controls.Add(this.greenCoeficientControl);
+            this.controlGroupBox.Controls.Add(this.redCoeficientControl);
             this.controlGroupBox.Controls.Add(this.DisplayOriginal);
             this.controlGroupBox.Controls.Add(this.label2);
             this.controlGroupBox.Controls.Add(this.maskHeight);
@@ -408,26 +431,109 @@
             this.controlGroupBox.Controls.Add(this.invertCheckBox);
             this.controlGroupBox.Location = new System.Drawing.Point(12, 13);
             this.controlGroupBox.Name = "controlGroupBox";
-            this.controlGroupBox.Size = new System.Drawing.Size(92, 220);
+            this.controlGroupBox.Size = new System.Drawing.Size(92, 299);
             this.controlGroupBox.TabIndex = 7;
             this.controlGroupBox.TabStop = false;
             this.controlGroupBox.Text = "Controls";
             // 
+            // filterStyleCheckBox
+            // 
+            this.filterStyleCheckBox.AutoSize = true;
+            this.filterStyleCheckBox.Location = new System.Drawing.Point(6, 107);
+            this.filterStyleCheckBox.Name = "filterStyleCheckBox";
+            this.filterStyleCheckBox.Size = new System.Drawing.Size(86, 17);
+            this.filterStyleCheckBox.TabIndex = 14;
+            this.filterStyleCheckBox.Text = "Filter by area";
+            this.filterStyleCheckBox.UseVisualStyleBackColor = true;
+            this.filterStyleCheckBox.CheckedChanged += new System.EventHandler(this.parametrsValueChanged);
+            // 
+            // blueCoeficientControl
+            // 
+            this.blueCoeficientControl.DecimalPlaces = 4;
+            this.blueCoeficientControl.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.blueCoeficientControl.Location = new System.Drawing.Point(6, 270);
+            this.blueCoeficientControl.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.blueCoeficientControl.Name = "blueCoeficientControl";
+            this.blueCoeficientControl.Size = new System.Drawing.Size(57, 20);
+            this.blueCoeficientControl.TabIndex = 13;
+            this.blueCoeficientControl.Value = new decimal(new int[] {
+            721,
+            0,
+            0,
+            262144});
+            this.blueCoeficientControl.ValueChanged += new System.EventHandler(this.parametrsValueChanged);
+            // 
+            // greenCoeficientControl
+            // 
+            this.greenCoeficientControl.DecimalPlaces = 4;
+            this.greenCoeficientControl.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.greenCoeficientControl.Location = new System.Drawing.Point(6, 244);
+            this.greenCoeficientControl.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.greenCoeficientControl.Name = "greenCoeficientControl";
+            this.greenCoeficientControl.Size = new System.Drawing.Size(57, 20);
+            this.greenCoeficientControl.TabIndex = 12;
+            this.greenCoeficientControl.Value = new decimal(new int[] {
+            7154,
+            0,
+            0,
+            262144});
+            this.greenCoeficientControl.ValueChanged += new System.EventHandler(this.parametrsValueChanged);
+            // 
+            // redCoeficientControl
+            // 
+            this.redCoeficientControl.DecimalPlaces = 4;
+            this.redCoeficientControl.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            this.redCoeficientControl.Location = new System.Drawing.Point(6, 218);
+            this.redCoeficientControl.Maximum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.redCoeficientControl.Name = "redCoeficientControl";
+            this.redCoeficientControl.Size = new System.Drawing.Size(57, 20);
+            this.redCoeficientControl.TabIndex = 11;
+            this.redCoeficientControl.Value = new decimal(new int[] {
+            2125,
+            0,
+            0,
+            262144});
+            this.redCoeficientControl.ValueChanged += new System.EventHandler(this.parametrsValueChanged);
+            // 
             // DisplayOriginal
             // 
             this.DisplayOriginal.AutoSize = true;
-            this.DisplayOriginal.Location = new System.Drawing.Point(6, 172);
+            this.DisplayOriginal.Location = new System.Drawing.Point(6, 195);
             this.DisplayOriginal.Name = "DisplayOriginal";
             this.DisplayOriginal.Size = new System.Drawing.Size(79, 17);
             this.DisplayOriginal.TabIndex = 10;
             this.DisplayOriginal.Text = "Raw image";
             this.DisplayOriginal.UseVisualStyleBackColor = true;
-            this.DisplayOriginal.CheckedChanged += new System.EventHandler(this.DisplayOriginal_CheckedChanged);
+            this.DisplayOriginal.CheckedChanged += new System.EventHandler(this.parametrsValueChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 104);
+            this.label2.Location = new System.Drawing.Point(6, 127);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(57, 13);
             this.label2.TabIndex = 9;
@@ -435,7 +541,7 @@
             // 
             // maskHeight
             // 
-            this.maskHeight.Location = new System.Drawing.Point(6, 120);
+            this.maskHeight.Location = new System.Drawing.Point(6, 143);
             this.maskHeight.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -452,7 +558,7 @@
             // 
             // maskWidth
             // 
-            this.maskWidth.Location = new System.Drawing.Point(6, 146);
+            this.maskWidth.Location = new System.Drawing.Point(6, 169);
             this.maskWidth.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -528,16 +634,15 @@
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
             // 
-            // StopButton
+            // MaskRemoval
             // 
-            this.StopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.StopButton.Location = new System.Drawing.Point(59, 435);
-            this.StopButton.Name = "StopButton";
-            this.StopButton.Size = new System.Drawing.Size(47, 20);
-            this.StopButton.TabIndex = 14;
-            this.StopButton.Text = "Stop";
-            this.StopButton.UseVisualStyleBackColor = true;
-            this.StopButton.Click += new System.EventHandler(this.StopButton_Click);
+            this.MaskRemoval.Location = new System.Drawing.Point(6, 432);
+            this.MaskRemoval.Name = "MaskRemoval";
+            this.MaskRemoval.Size = new System.Drawing.Size(140, 23);
+            this.MaskRemoval.TabIndex = 2;
+            this.MaskRemoval.Text = "Remove selected";
+            this.MaskRemoval.UseVisualStyleBackColor = true;
+            this.MaskRemoval.Click += new System.EventHandler(this.removeMasks);
             // 
             // MainForm
             // 
@@ -569,9 +674,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.videoSlider)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.VideoBox)).EndInit();
-            this.MaskContextMenuStrip1.ResumeLayout(false);
+            this.MaskContextMenuStrip.ResumeLayout(false);
             this.controlGroupBox.ResumeLayout(false);
             this.controlGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.blueCoeficientControl)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.greenCoeficientControl)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.redCoeficientControl)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.maskHeight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.maskWidth)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.blobUpperBound)).EndInit();
@@ -606,7 +714,7 @@
         private System.Windows.Forms.CheckBox beginingBias;
         private System.Windows.Forms.NumericUpDown runAnalysisTo;
         private System.Windows.Forms.NumericUpDown runAnalysisFrom;
-        private System.Windows.Forms.ContextMenuStrip MaskContextMenuStrip1;
+        private System.Windows.Forms.ContextMenuStrip MaskContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem MaskCIrcle;
         private System.Windows.Forms.ToolStripMenuItem MaskRectangle;
         private System.Windows.Forms.ToolStripMenuItem drawCurveToolStripMenuItem;
@@ -622,6 +730,11 @@
         private System.Windows.Forms.PictureBox highlightBlobPictureBox;
         private System.Windows.Forms.CheckBox DisplayOriginal;
         private System.Windows.Forms.Button StopButton;
+        private System.Windows.Forms.NumericUpDown blueCoeficientControl;
+        private System.Windows.Forms.NumericUpDown greenCoeficientControl;
+        private System.Windows.Forms.NumericUpDown redCoeficientControl;
+        private System.Windows.Forms.CheckBox filterStyleCheckBox;
+        private System.Windows.Forms.Button MaskRemoval;
     }
 }
 

@@ -10,7 +10,7 @@ using System.IO;
 
 namespace FlyCatcher
 {
-    interface IPictureGiver<out T> : IEnumerable<T>
+    interface IGiver<out T> : IEnumerable<T>
     {
         T First { get; }
         T Actual { get; }
@@ -28,8 +28,8 @@ namespace FlyCatcher
         int Step { get; set; }
     }
 
-    class SeparatePhotoGiver : IPictureGiver<Bitmap>
-    {        
+    class SeparatePhotoGiver : IGiver<Bitmap>
+    {
         string photoMask;
         string folder;
         string fileSuffix;
@@ -38,7 +38,7 @@ namespace FlyCatcher
         public int actualIndex { get; set; }
         int lastIndex;        //TODO: problem with undefined values
         int fromIndex;
-        int toIndex;        
+        int toIndex;
 
         public Bitmap Actual
         { get { return this[actualIndex]; } }
@@ -82,7 +82,7 @@ namespace FlyCatcher
         }
 
         private string getMask(string file) => file.TrimEnd(Constants.Digits.ToCharArray());
-        private string getLast(string file)=>new string(file.Reverse().TakeWhile(char.IsDigit).Reverse().ToArray());
+        private string getLast(string file) => new string(file.Reverse().TakeWhile(char.IsDigit).Reverse().ToArray());
 
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace FlyCatcher
                  Path.GetExtension(path),
                  str.Length,
                  int.Parse(str)
-                );           
+                );
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace FlyCatcher
         }
 
         private string photoName(int index)
-        {        
+        {
             string num = index.ToString($"D{digitCount}");
 
             Console.WriteLine($"{folder}\\{photoMask}{num}{fileSuffix}");
@@ -140,9 +140,6 @@ namespace FlyCatcher
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

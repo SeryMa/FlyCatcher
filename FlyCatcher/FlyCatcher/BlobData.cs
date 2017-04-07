@@ -12,21 +12,21 @@ using AForge;
 
 namespace FlyCatcher
 {
-    interface IData<T, out MeasureType, out DistanceType> where MeasureType : IComparable
+    interface IData<T, out MeasureType, out DistanceType, out PositionType> where MeasureType : IComparable
     {
         ICollection<T> Items { get; }
         DistanceType averageSpeed { get; }
         DistanceType averageArea { get; }
 
-        AForge.Point Direction { get; }
-        AForge.Point PredictNext { get; }
+        PositionType Direction { get; }
+        PositionType PredictNext { get; }
 
         T First { get; }
 
         string Tag { get; }
 
-        bool valid { get; }
-        void makeInvalid();
+        bool Valid { get; }
+        void MakeInvalid();
 
         MeasureType GetMatch(T item);
         MeasureType AddItem(T item);
@@ -37,7 +37,7 @@ namespace FlyCatcher
         void Draw(Graphics gr, Constants.HighlightFormat format);
     }
 
-    class MergeData : IData<Blob, double, double>
+    class MergeData : IData<Blob, double, double, AForge.Point>
     {
         public double averageArea { get { return merges.Average(x => x.averageArea); } }
 
@@ -66,15 +66,15 @@ namespace FlyCatcher
         /// </summary>
         public Blob First { get { throw new NotImplementedException(); } }
 
-        public bool valid { get { return merges.Any(b => b.valid); } }
+        public bool Valid { get { return merges.Any(b => b.Valid); } }
 
-        private IData<Blob, double, double>[] merges;
+        private IData<Blob, double, double, AForge.Point>[] merges;
 
-        public MergeData(IData<Blob, double, double> first, IData<Blob, double, double> second)
+        public MergeData(IData<Blob, double, double, AForge.Point> first, IData<Blob, double, double, AForge.Point> second)
         {
-            merges = new IData<Blob, double, double>[2] { first, second };
+            merges = new IData<Blob, double, double, AForge.Point>[2] { first, second };
         }
-        public MergeData(IEnumerable<IData<Blob, double, double>> data)
+        public MergeData(IEnumerable<IData<Blob, double, double, AForge.Point>> data)
         {
             merges = data.ToArray();
         }
@@ -89,10 +89,10 @@ namespace FlyCatcher
 
         public double GetMatch(Blob item) => (from x in merges select x.GetMatch(item)).Average();
 
-        public void makeInvalid()
+        public void MakeInvalid()
         {
             foreach (var item in merges)
-                item.makeInvalid();
+                item.MakeInvalid();
         }
 
         public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
@@ -107,7 +107,7 @@ namespace FlyCatcher
         }
     }
 
-    class BlobData : IData<Blob, double, double>
+    class BlobData : IData<Blob, double, double, AForge.Point>
     {
         protected static Font drawFont = new Font("Arial", 15);
         protected static SolidBrush drawBrush = new SolidBrush(Color.GreenYellow);
@@ -141,7 +141,7 @@ namespace FlyCatcher
 
         public string Tag { get; set; }
 
-        public bool valid { get; private set; }
+        public bool Valid { get; private set; }
 
         private void removeLast()
         {
@@ -153,7 +153,7 @@ namespace FlyCatcher
 
         private double addFirst(Blob blob)
         {
-            double distance = GetMatch(blob);
+            double distance = GetDistance(blob);
 
             sumAll += distance;
 
@@ -167,7 +167,7 @@ namespace FlyCatcher
         {
             maxCount = historyCount;
 
-            valid = true;
+            Valid = true;
 
             Tag = tag + Extensions.GenerateString(1);
 
@@ -179,8 +179,8 @@ namespace FlyCatcher
             items.AddFirst(blob);
         }
 
-        //TODO: get better matching function
-        public double GetMatch(Blob blob) => blob.CenterOfGravity.DistanceTo(First.CenterOfGravity);
+        public double GetDistance(Blob blob) => blob.CenterOfGravity.DistanceTo(First.CenterOfGravity);
+        public double GetMatch(Blob blob) => blob.CenterOfGravity.DistanceTo(PredictNext);
 
         public double AddItem(Blob blob)
         {
@@ -188,10 +188,10 @@ namespace FlyCatcher
 
             return addFirst(blob);
         }
-        
+
         public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
         {
-            if (valid)
+            if (Valid)
             {
                 if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
                     writer.Write($"{items.First.Value.Area}{Constants.Delimeter}");
@@ -232,7 +232,6 @@ namespace FlyCatcher
                     writer.Write($"{Constants.Blank}{Constants.Delimeter}");
             }
         }
-
         public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
         {
             if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
@@ -247,7 +246,6 @@ namespace FlyCatcher
             if (format.HasFlag(Constants.OutputFormat.AverageSpeed))
                 writer.Write($"Speed{Constants.Delimeter}");
         }
-
         public void PrintOutTag(StreamWriter writer, Constants.OutputFormat format)
         {
             writer.Write(Tag);
@@ -279,14 +277,14 @@ namespace FlyCatcher
                 gr.DrawString(Tag, drawFont, drawBrush, First.Rectangle.Location);
 
             if (format.HasFlag(Constants.HighlightFormat.Prediction))
-                gr.DrawEllipse(new Pen(drawBrush), MathFunctions.getRectangleFromRadius(PredictNext.ConverseToPoint(), 5, 5));
+                gr.DrawEllipse(new Pen(drawBrush), MathFunctions.getRectangleFromRadius(PredictNext.ConverseToPoint(), First.Rectangle.getDiameter()));
 
             //TODO: direction displayng doesn't work well
             //if (format.HasFlag(Extensions.HighlightFormat.Direction))
             //    gr.DrawLine(blobHighliter, First.CenterOfGravity.ConverseToPointF(), (PredictNext + First.CenterOfGravity.Multiply(3)).ConverseToPointF());
         }
 
-        public void makeInvalid() => valid = false;
+        public void MakeInvalid() => Valid = false;
         //TODO: maybe more logic behind this...
     }
 }

@@ -255,18 +255,28 @@ namespace FlyCatcher
                 }
         }
 
-        private void CircleAssignedZeros()
+        private bool CircleAssignedZeros()
         {
-            for (int row = 0; row < Dimension; row++)
-                for (int column = 0; column < Dimension; column++)
-                    if (isCircleableZero(row, column))
-                        if (circleableZerosInRow(row) == 1 || circleableZerosInColumn(column) == 1)
-                            tags[row][column] = Tag.Circled;
+            bool circledAny = false;
 
             for (int row = 0; row < Dimension; row++)
                 for (int column = 0; column < Dimension; column++)
                     if (isCircleableZero(row, column))
+                        if (circleableZerosInRow(row) == 1 || circleableZerosInColumn(column) == 1)
+                        {
+                            tags[row][column] = Tag.Circled;
+                            circledAny = true;
+                        }
+
+            for (int row = 0; row < Dimension; row++)
+                for (int column = 0; column < Dimension; column++)
+                    if (isCircleableZero(row, column))
+                    {
                         tags[row][column] = Tag.Circled;
+                        return true;
+                    }
+
+            return circledAny;
         }
 
         private void Assign()
@@ -281,63 +291,63 @@ namespace FlyCatcher
                     assignColumn(zeroPosition.Y);
 
             //Console.WriteLine(ToString());
-            CircleAssignedZeros();
+            while (CircleAssignedZeros());            
         }
 
-        private bool isFreeZero(int row, int column) => matrix[row][column].isZero() &&
-                                                        !tags.GetColumn(column).Any(tag => tag == Tag.Circled);
-        private int countFreeZeros(int row, out Point pt)
-        {
-            pt = nullPoint;
-            int counter = 0;
+        //private bool isFreeZero(int row, int column) => matrix[row][column].isZero() &&
+        //                                                !tags.GetColumn(column).Any(tag => tag == Tag.Circled);
+        //private int countFreeZeros(int row, out Point pt)
+        //{
+        //    pt = nullPoint;
+        //    int counter = 0;
 
-            for (int column = 0; column < Dimension; column++)
-                if (isFreeZero(row, column))
-                {
-                    pt = new Point(row, column);
-                    counter++;
-                }
+        //    for (int column = 0; column < Dimension; column++)
+        //        if (isFreeZero(row, column))
+        //        {
+        //            pt = new Point(row, column);
+        //            counter++;
+        //        }
 
-            return counter;
-        }
+        //    return counter;
+        //}
 
-        private int countZeros(int column)
-        {
-            int counter = 0;
+        //private int countZeros(int column)
+        //{
+        //    int counter = 0;
 
-            for (int row = 0; row < Dimension; row++)
-                if (matrix[row][column].isZero())
-                    counter++;
+        //    for (int row = 0; row < Dimension; row++)
+        //        if (matrix[row][column].isZero())
+        //            counter++;
 
-            return counter;
-        }
+        //    return counter;
+        //}
 
-        private List<int> supp(List<int> lst)
-        {
-            List<int> ret = new List<int>();
+        //private List<int> supp(List<int> lst)
+        //{
+        //    List<int> ret = new List<int>();
 
-            lst.Sort();
-            int i = 0;
+        //    lst.Sort();
+        //    int i = 0;
 
-            foreach (int item in lst)
-            {
-                while (item != i && i < Dimension)
-                {
-                    ret.Add(i);
-                    i++;
-                }
+        //    foreach (int item in lst)
+        //    {
+        //        while (item != i && i < Dimension)
+        //        {
+        //            ret.Add(i);
+        //            i++;
+        //        }
 
-                i++;
-            }
+        //        i++;
+        //    }
 
-            while (i < Dimension)
-            {
-                ret.Add(i);
-                i++;
-            }
+        //    while (i < Dimension)
+        //    {
+        //        ret.Add(i);
+        //        i++;
+        //    }
 
-            return ret;
-        }
+        //    return ret;
+        //}
 
         //private void Assign()
         //{
@@ -449,10 +459,6 @@ namespace FlyCatcher
                 initTags();
 
                 assignment = GetAssignment();
-
-
-                //TOOD: bug with large matrixes
-                //Console.WriteLine(ToString());
             }
 
             return FilterOutput(assignment);
