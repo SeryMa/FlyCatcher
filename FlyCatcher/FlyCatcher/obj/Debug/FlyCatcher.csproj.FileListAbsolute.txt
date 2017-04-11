@@ -62,12 +62,7 @@ d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AFo
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Imaging.dll
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Imaging.Formats.dll
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Imaging.IPPrototyper.dll
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.MachineLearning.dll
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Math.dll
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Neuro.dll
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Robotics.Lego.dll
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Robotics.Surveyor.dll
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Robotics.TeRK.dll
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.DirectShow.dll
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.dll
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.FFMPEG.dll
@@ -82,12 +77,7 @@ d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AFo
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Genetic.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Imaging.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Imaging.Formats.xml
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.MachineLearning.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Math.xml
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Neuro.xml
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Robotics.Lego.xml
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Robotics.Surveyor.xml
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Robotics.TeRK.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.DirectShow.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.FFMPEG.xml

@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Threading;
 
 using AForge.Video;
-using AForge.Video.DirectShow;
 
 using AForge.Imaging;
 using AForge.Imaging.Filters;
@@ -33,18 +32,21 @@ namespace FlyCatcher
         private ICounter<Bitmap, Blob, AForge.Point> blobCounter;
         private List<IKeeper<Blob, double, double, AForge.Point>> blobKeepers;
 
+        private static OpenFileDialog openDialog = new OpenFileDialog();
+
+        internal IEnumerable<IMask<AForge.Point>> masks { get { return maskControlContainer.Items.OfType<IMask<AForge.Point>>(); } }
+
         internal bool shouldInvert { get { return invertCheckBox.Checked; } }
         internal bool filterByArea { get { return filterStyleCheckBox.Checked; } }
         internal int upperBoundValue { get { return (int)blobUpperBound.Value; } }
         internal int lowerBoundValue { get { return (int)blobLowerBound.Value; } }
-        
-        internal IEnumerable<IMask<AForge.Point>> masks { get { return maskControlContainer.Items.OfType<IMask<AForge.Point>>(); } }
 
         internal double redCoeficient { get { return (double)redCoeficientControl.Value; } }
         internal double greenCoeficient { get { return (double)greenCoeficientControl.Value; } }
         internal double blueCoeficient { get { return (double)blueCoeficientControl.Value; } }
 
         private int historyCount;
+        private double penaltyValue;
 
         public MainForm()
         {
@@ -52,7 +54,7 @@ namespace FlyCatcher
 
             //TODO: make init
             debugInit();
-        }               
+        }
 
         #region Init
 
@@ -62,6 +64,11 @@ namespace FlyCatcher
             pictureProcessor = new BitmapPreProcessor(this);
             blobCounter = new PictureBlobCounter(this);
             blobKeepers = new List<IKeeper<Blob, double, double, AForge.Point>>();
+
+            openDialog.InitialDirectory = "c:\\";
+            openDialog.Filter = Constants.FileExtensions;
+            openDialog.FilterIndex = 2;
+            openDialog.RestoreDirectory = true;
 
             initParams(parameters: null);
 
@@ -75,11 +82,14 @@ namespace FlyCatcher
                                                                       .ToLookup(parsedLine => parsedLine[0].Trim(), s => s[1].Trim());
 
         private void initPictureGiverWithSeparatePhotoGiver(string path) => pictureGiver = new SeparatePhotoGiver(path);
+        private void initPictureGiverWithAVIGiver(string path) => pictureGiver = new VideoAVIGiver(path);
+        private void initPictureGiverWithMPEGGiver(string path) => pictureGiver = new VideoMPEGGiver(path);
 
         private void initParams(string path) => initParams(getParameters(path));
         private void initParams(ILookup<string, string> parameters)
         {
             historyCount = getParameter("history", parameters, 10, int.Parse);
+            penaltyValue = getParameter("penalty", parameters, 10, int.Parse);
 
             blobUpperBound.Value = getParameter("max_size", parameters, 10, int.Parse);
             blobLowerBound.Value = getParameter("min_size", parameters, 5, int.Parse);
@@ -119,7 +129,7 @@ namespace FlyCatcher
         private void initMask(ILookup<string, string> parameters)
         {
             if (getParameter("clean", parameters, false, bool.Parse))
-            {                
+            {
                 maskControlContainer.Items.Clear();
                 blobKeepers.Clear();
             }
@@ -134,7 +144,7 @@ namespace FlyCatcher
                             var pars = mask.Split(' ');
                             RectangleF rect = MathFunctions.getRectangle(float.Parse(pars[1]), float.Parse(pars[2]), float.Parse(pars[3]), float.Parse(pars[4]));
                             //TODO: better parsing here...
-                            
+
                             switch (param.Key)
                             {
                                 case "ellipse":
@@ -169,41 +179,69 @@ namespace FlyCatcher
             ActualState = new StreamReader(path);
         }
 
-        private void InitParams(object sender, DragEventArgs e)
+        private void InitParams(string path)
         {
-            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-
-            foreach (var item in fileList)
+            try
             {
-                switch (Path.GetExtension(item))
+                switch (Path.GetExtension(path))
                 {
                     case ".config":
-                        initParams(item);
+                        initParams(path);
                         break;
                     case ".mask":
-                        initMasks(item);
+                        initMasks(path);
                         break;
                     case ".output":
-                        initOutputFormat(item);
+                        initOutputFormat(path);
                         break;
                     case ".csv":
-                        initOutput(item);
+                        initOutput(path);
                         break;
                     case ".state":
-                        initState(item);
+                        initState(path);
                         break;
                     case ".jpg":
                     case ".png":
                     case ".bmp":
-                        initPictureGiverWithSeparatePhotoGiver(item);
+                        initPictureGiverWithSeparatePhotoGiver(path);
+                        break;
+                    case ".avi":
+                        initPictureGiverWithAVIGiver(path);
+                        break;
+                    case ".mpeg":
+                        initPictureGiverWithMPEGGiver(path);
                         break;
                     default:
                         break;
                 }
-
             }
+            catch (VideoException ex)
+            {
+                MessageBox.Show(ex.Message, "Failed loading video", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DragDroped(object sender, DragEventArgs e)
+        {
+            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+
+            foreach (var path in fileList)
+                InitParams(path);
 
             refreshActualFrame();
+        }
+
+        private void openFile(object sender, EventArgs e)
+        {
+            if (MainForm.openDialog.ShowDialog(this) == DialogResult.OK)
+                foreach (var path in openDialog.FileNames)
+                    InitParams(path);
+
+        }
+
+        private void saveState(object sender, EventArgs e)
+        {
+
         }
 
         private void MainForm_DragEnter(object sender, DragEventArgs e)
@@ -219,7 +257,7 @@ namespace FlyCatcher
         private FileStream tmpFile;
 
         private Constants.OutputFormat outputFormat;
-        private Constants.HighlightFormat highlightFormat;        
+        private Constants.HighlightFormat highlightFormat;
 
         void highlightBlobs(Bitmap image)
         {
@@ -378,7 +416,7 @@ namespace FlyCatcher
                         case state.runing:
                             proccesFrame(picture, Extensions.ActualizeBlobKeeper);
 
-                            printOut(pictureGiver.actualIndex);
+                            printOut(pictureGiver.ActualIndex);
                             videoSlider.crossThreadOperation(() => adjustSliders());
 
                             break;
@@ -408,16 +446,16 @@ namespace FlyCatcher
         #region VideoControl
         int actualPicture
         {
-            get { return pictureGiver.actualIndex; }
+            get { return pictureGiver.ActualIndex; }
             set
             {
                 if (value > pictureGiver.RunTo)
                 {
-                    pictureGiver.actualIndex = pictureGiver.RunTo;
+                    pictureGiver.ActualIndex = pictureGiver.RunTo;
                     actualIndex.Value = actualPicture;
                 }
                 else
-                    pictureGiver.actualIndex = value;
+                    pictureGiver.ActualIndex = value;
 
                 videoSlider.crossThreadOperation(() => adjustSliders());
             }
@@ -498,7 +536,7 @@ namespace FlyCatcher
         bool isOkayToDraw() { return actualStyle != DrawStyle.None; }
         string maskTag { get { return maskTagBox.Text; } }
         RectangleF drawRectangle;
-        
+
         float halfWidth { get { return (float)maskWidth.Value; } set { maskWidth.Value = (decimal)value; } }
         float halfHeight { get { return (float)maskHeight.Value; } set { maskHeight.Value = (decimal)value; } }
         float wheelCorrection = 1200;
@@ -528,7 +566,7 @@ namespace FlyCatcher
                 default:
                     break;
             }
-            
+
             maskControlContainer.Items.Add(mask);
         }
 
@@ -598,7 +636,7 @@ namespace FlyCatcher
                 addMask(actualStyle, MathFunctions.getPercentRectangle(drawRectangle, VideoBox.Size), maskTag);
 
                 if (!blobKeepers.Any(keeper => keeper.Tag == maskTag))
-                    blobKeepers.Add(new BlobKeeperAssignment(maskTag, historyCount));
+                    blobKeepers.Add(new BlobKeeperAssignment(maskTag, historyCount, penaltyValue));
 
                 refreshActualFrame();
             });
@@ -642,5 +680,16 @@ namespace FlyCatcher
         private void displayMask(object sender, EventArgs e) => Refresh();
 
         #endregion
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (ActualState != null) ActualState.Close();
+            if (Output != null) Output.Close();
+        }
     }
 }

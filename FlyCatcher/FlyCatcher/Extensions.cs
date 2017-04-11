@@ -259,6 +259,13 @@ namespace FlyCatcher
         public const string CSVFileExtension = ".csv";
         public const string StateFileExtension = ".state";
 
+        public const string FileExtensions = @"
+Image Files(*.bmp; *.jpg; *.png)| *.BMP; *.JPG; *.png |
+Video Files(*.AVI; *.MPEG)| *.AVI; *.MPEG |
+Config Files(*.config; *.mask; *.state; *.output) | *.config; *.mask; *.state; *.output |
+Output Files(*.csv) | *.csv; |
+All files(*.*) | *.*";
+
         [Flags]
         public enum OutputFormat { None = 0, Objects = 1, AverageSpeed = 2, ImmediateSpeed = 4, Position = 8, Prediction = 16, ImmadiateArea = 32, AverageArea = 64 }
         public static Dictionary<OutputFormat, string> OutputTag = new Dictionary<OutputFormat, string>()

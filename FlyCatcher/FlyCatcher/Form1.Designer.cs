@@ -31,8 +31,8 @@
             this.components = new System.ComponentModel.Container();
             this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.localVideoCaptureDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openVideofileusingDirectShowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFileToolStrip = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveFileToolStrip = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
@@ -41,6 +41,7 @@
             this.HighlightBlob = new System.Windows.Forms.GroupBox();
             this.highlightBlobPictureBox = new System.Windows.Forms.PictureBox();
             this.maskGroupBox = new System.Windows.Forms.GroupBox();
+            this.MaskRemoval = new System.Windows.Forms.Button();
             this.maskTagBox = new System.Windows.Forms.TextBox();
             this.maskControlContainer = new System.Windows.Forms.ListBox();
             this.videoGroupBox = new System.Windows.Forms.GroupBox();
@@ -72,7 +73,6 @@
             this.blobLowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.MaskRemoval = new System.Windows.Forms.Button();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
@@ -109,36 +109,39 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.localVideoCaptureDeviceToolStripMenuItem,
-            this.openVideofileusingDirectShowToolStripMenuItem,
+            this.openFileToolStrip,
+            this.saveFileToolStrip,
             this.toolStripMenuItem1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
             // 
-            // localVideoCaptureDeviceToolStripMenuItem
+            // openFileToolStrip
             // 
-            this.localVideoCaptureDeviceToolStripMenuItem.Name = "localVideoCaptureDeviceToolStripMenuItem";
-            this.localVideoCaptureDeviceToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
-            this.localVideoCaptureDeviceToolStripMenuItem.Text = "Local &Video Capture Device";
+            this.openFileToolStrip.Name = "openFileToolStrip";
+            this.openFileToolStrip.Size = new System.Drawing.Size(152, 22);
+            this.openFileToolStrip.Text = "Open";
+            this.openFileToolStrip.Click += new System.EventHandler(this.openFile);
             // 
-            // openVideofileusingDirectShowToolStripMenuItem
+            // saveFileToolStrip
             // 
-            this.openVideofileusingDirectShowToolStripMenuItem.Name = "openVideofileusingDirectShowToolStripMenuItem";
-            this.openVideofileusingDirectShowToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
-            this.openVideofileusingDirectShowToolStripMenuItem.Text = "Open video &file (using DirectShow)";
+            this.saveFileToolStrip.Name = "saveFileToolStrip";
+            this.saveFileToolStrip.Size = new System.Drawing.Size(152, 22);
+            this.saveFileToolStrip.Text = "Save";
+            this.saveFileToolStrip.Click += new System.EventHandler(this.saveState);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(254, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(257, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // statusStrip
             // 
@@ -202,6 +205,16 @@
             this.maskGroupBox.TabIndex = 8;
             this.maskGroupBox.TabStop = false;
             this.maskGroupBox.Text = "Masks";
+            // 
+            // MaskRemoval
+            // 
+            this.MaskRemoval.Location = new System.Drawing.Point(6, 432);
+            this.MaskRemoval.Name = "MaskRemoval";
+            this.MaskRemoval.Size = new System.Drawing.Size(140, 23);
+            this.MaskRemoval.TabIndex = 2;
+            this.MaskRemoval.Text = "Remove selected";
+            this.MaskRemoval.UseVisualStyleBackColor = true;
+            this.MaskRemoval.Click += new System.EventHandler(this.removeMasks);
             // 
             // maskTagBox
             // 
@@ -634,16 +647,6 @@
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
             // 
-            // MaskRemoval
-            // 
-            this.MaskRemoval.Location = new System.Drawing.Point(6, 432);
-            this.MaskRemoval.Name = "MaskRemoval";
-            this.MaskRemoval.Size = new System.Drawing.Size(140, 23);
-            this.MaskRemoval.TabIndex = 2;
-            this.MaskRemoval.Text = "Remove selected";
-            this.MaskRemoval.UseVisualStyleBackColor = true;
-            this.MaskRemoval.Click += new System.EventHandler(this.removeMasks);
-            // 
             // MainForm
             // 
             this.AllowDrop = true;
@@ -656,7 +659,8 @@
             this.MainMenuStrip = this.mainMenuStrip;
             this.Name = "MainForm";
             this.Text = "Simple Player";
-            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.InitParams);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.DragDroped);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainForm_DragEnter);
             this.mainMenuStrip.ResumeLayout(false);
             this.mainMenuStrip.PerformLayout();
@@ -696,9 +700,9 @@
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.Panel mainPanel;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem localVideoCaptureDeviceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openFileToolStrip;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem openVideofileusingDirectShowToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveFileToolStrip;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.PictureBox VideoBox;
         private System.Windows.Forms.ToolStripStatusLabel fpsLabel;

@@ -110,7 +110,7 @@ namespace FlyCatcher
 
     class BlobKeeperAssignment : BlobKeeper
     {
-        private SquareMatrix matrix = new SquareMatrix(10);
+        private SquareMatrix matrix;
 
         private double getMatch(IData<Blob, double, double, AForge.Point> agent, Blob blob) => agent.GetMatch(blob);
 
@@ -130,14 +130,14 @@ namespace FlyCatcher
 
         public override void ActualizeData(IEnumerable<Blob> items) => ActualizeData(items.ToArray());
 
-        public BlobKeeperAssignment(IEnumerable<Blob> items, string tag, int historyCount) : base(items, tag, historyCount)
+        public BlobKeeperAssignment(IEnumerable<Blob> items, string tag, int historyCount, double penalty) : base(items, tag, historyCount)
         {
-            matrix = new SquareMatrix(10);
+            matrix = new SquareMatrix(penalty);
         }
 
-        public BlobKeeperAssignment(string tag, int historyCount) : base(tag, historyCount)
+        public BlobKeeperAssignment(string tag, int historyCount, double penalty) : base(tag, historyCount)
         {
-            matrix = new SquareMatrix(10);
+            matrix = new SquareMatrix(penalty);
         }
     }
 
