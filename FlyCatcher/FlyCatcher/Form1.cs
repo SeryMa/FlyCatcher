@@ -52,6 +52,25 @@ namespace FlyCatcher
         {
             InitializeComponent();
 
+            videoGroupBox.MinimumSize = new Size(endingBias.Right + 1, controlGroupBox.Height);
+            maskGroupBox.MinimumSize = new Size(maskGroupBox.Width, controlGroupBox.Height);
+            controlGroupBox.MinimumSize = controlGroupBox.Size;
+
+            //TODO: this could be calculated more preciselly
+            MinimumSize =
+                new Size(videoGroupBox.MinimumSize.Width + maskGroupBox.MinimumSize.Width + controlGroupBox.MinimumSize.Width + 4 * controlGroupBox.Left + 3,
+                         controlGroupBox.Bottom + fpsLabel.Height + mainMenuStrip.Height + 50);
+
+            openDialog.Filter = Constants.FileExtensions;
+            openDialog.FilterIndex = 1;
+            openDialog.RestoreDirectory = true;
+
+            initParams(parameters: null);
+
+            pictureProcessor = new BitmapPreProcessor(this);
+            blobCounter = new PictureBlobCounter(this);
+            blobKeepers = new List<IKeeper<Blob, double, double, AForge.Point>>();
+
             //TODO: make init
             debugInit();
         }
@@ -60,17 +79,7 @@ namespace FlyCatcher
 
         private void debugInit()
         {
-            pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", ".jpg", 5, 600);
-            pictureProcessor = new BitmapPreProcessor(this);
-            blobCounter = new PictureBlobCounter(this);
-            blobKeepers = new List<IKeeper<Blob, double, double, AForge.Point>>();
-
-            openDialog.InitialDirectory = "c:\\";
-            openDialog.Filter = Constants.FileExtensions;
-            openDialog.FilterIndex = 2;
-            openDialog.RestoreDirectory = true;
-
-            initParams(parameters: null);
+            pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", ".jpg", 5, 600);            
 
             refreshActualFrame();
         }
@@ -233,10 +242,9 @@ namespace FlyCatcher
 
         private void openFile(object sender, EventArgs e)
         {
-            if (MainForm.openDialog.ShowDialog(this) == DialogResult.OK)
+            if (openDialog.ShowDialog(this) == DialogResult.OK)
                 foreach (var path in openDialog.FileNames)
-                    InitParams(path);
-
+                    InitParams(path);            
         }
 
         private void saveState(object sender, EventArgs e)

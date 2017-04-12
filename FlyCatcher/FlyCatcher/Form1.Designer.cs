@@ -147,7 +147,7 @@
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fpsLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 508);
+            this.statusStrip.Location = new System.Drawing.Point(0, 493);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(928, 22);
             this.statusStrip.TabIndex = 1;
@@ -169,11 +169,13 @@
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(0, 24);
             this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Size = new System.Drawing.Size(928, 484);
+            this.mainPanel.Size = new System.Drawing.Size(928, 469);
             this.mainPanel.TabIndex = 2;
             // 
             // HighlightBlob
             // 
+            this.HighlightBlob.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.HighlightBlob.Controls.Add(this.highlightBlobPictureBox);
             this.HighlightBlob.Location = new System.Drawing.Point(12, 318);
             this.HighlightBlob.Name = "HighlightBlob";
@@ -195,20 +197,23 @@
             // 
             // maskGroupBox
             // 
-            this.maskGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.maskGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.maskGroupBox.Controls.Add(this.MaskRemoval);
             this.maskGroupBox.Controls.Add(this.maskTagBox);
             this.maskGroupBox.Controls.Add(this.maskControlContainer);
             this.maskGroupBox.Location = new System.Drawing.Point(764, 13);
             this.maskGroupBox.Name = "maskGroupBox";
-            this.maskGroupBox.Size = new System.Drawing.Size(152, 461);
+            this.maskGroupBox.Size = new System.Drawing.Size(152, 446);
             this.maskGroupBox.TabIndex = 8;
             this.maskGroupBox.TabStop = false;
             this.maskGroupBox.Text = "Masks";
             // 
             // MaskRemoval
             // 
-            this.MaskRemoval.Location = new System.Drawing.Point(6, 432);
+            this.MaskRemoval.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MaskRemoval.Location = new System.Drawing.Point(6, 417);
             this.MaskRemoval.Name = "MaskRemoval";
             this.MaskRemoval.Size = new System.Drawing.Size(140, 23);
             this.MaskRemoval.TabIndex = 2;
@@ -219,7 +224,8 @@
             // maskTagBox
             // 
             this.maskTagBox.AllowDrop = true;
-            this.maskTagBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.maskTagBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.maskTagBox.Location = new System.Drawing.Point(3, 16);
             this.maskTagBox.MaxLength = 255;
             this.maskTagBox.Name = "maskTagBox";
@@ -229,11 +235,14 @@
             // 
             // maskControlContainer
             // 
+            this.maskControlContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.maskControlContainer.FormattingEnabled = true;
             this.maskControlContainer.Location = new System.Drawing.Point(3, 38);
             this.maskControlContainer.Name = "maskControlContainer";
             this.maskControlContainer.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.maskControlContainer.Size = new System.Drawing.Size(146, 394);
+            this.maskControlContainer.Size = new System.Drawing.Size(146, 368);
             this.maskControlContainer.TabIndex = 0;
             this.maskControlContainer.SelectedIndexChanged += new System.EventHandler(this.displayMask);
             // 
@@ -254,7 +263,7 @@
             this.videoGroupBox.Controls.Add(this.VideoBox);
             this.videoGroupBox.Location = new System.Drawing.Point(110, 13);
             this.videoGroupBox.Name = "videoGroupBox";
-            this.videoGroupBox.Size = new System.Drawing.Size(648, 461);
+            this.videoGroupBox.Size = new System.Drawing.Size(648, 446);
             this.videoGroupBox.TabIndex = 3;
             this.videoGroupBox.TabStop = false;
             this.videoGroupBox.Text = "Video";
@@ -262,7 +271,7 @@
             // StopButton
             // 
             this.StopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.StopButton.Location = new System.Drawing.Point(59, 435);
+            this.StopButton.Location = new System.Drawing.Point(59, 420);
             this.StopButton.Name = "StopButton";
             this.StopButton.Size = new System.Drawing.Size(47, 20);
             this.StopButton.TabIndex = 14;
@@ -276,7 +285,7 @@
             this.endingBias.AutoSize = true;
             this.endingBias.Checked = true;
             this.endingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.endingBias.Location = new System.Drawing.Point(393, 436);
+            this.endingBias.Location = new System.Drawing.Point(393, 421);
             this.endingBias.Name = "endingBias";
             this.endingBias.Size = new System.Drawing.Size(79, 17);
             this.endingBias.TabIndex = 13;
@@ -290,7 +299,7 @@
             this.beginingBias.AutoSize = true;
             this.beginingBias.Checked = true;
             this.beginingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.beginingBias.Location = new System.Drawing.Point(229, 436);
+            this.beginingBias.Location = new System.Drawing.Point(229, 421);
             this.beginingBias.Name = "beginingBias";
             this.beginingBias.Size = new System.Drawing.Size(112, 17);
             this.beginingBias.TabIndex = 12;
@@ -302,7 +311,7 @@
             // 
             this.runAnalysisTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisTo.Enabled = false;
-            this.runAnalysisTo.Location = new System.Drawing.Point(347, 435);
+            this.runAnalysisTo.Location = new System.Drawing.Point(347, 420);
             this.runAnalysisTo.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -319,7 +328,7 @@
             // 
             this.runAnalysisFrom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisFrom.Enabled = false;
-            this.runAnalysisFrom.Location = new System.Drawing.Point(183, 435);
+            this.runAnalysisFrom.Location = new System.Drawing.Point(183, 420);
             this.runAnalysisFrom.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -335,7 +344,7 @@
             // actualIndex
             // 
             this.actualIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.actualIndex.Location = new System.Drawing.Point(137, 435);
+            this.actualIndex.Location = new System.Drawing.Point(137, 420);
             this.actualIndex.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -352,7 +361,7 @@
             // 
             this.videoSlider.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.videoSlider.Location = new System.Drawing.Point(6, 384);
+            this.videoSlider.Location = new System.Drawing.Point(6, 369);
             this.videoSlider.Maximum = 100;
             this.videoSlider.Name = "videoSlider";
             this.videoSlider.Size = new System.Drawing.Size(637, 45);
@@ -362,7 +371,7 @@
             // StartPauseButton
             // 
             this.StartPauseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.StartPauseButton.Location = new System.Drawing.Point(6, 435);
+            this.StartPauseButton.Location = new System.Drawing.Point(6, 420);
             this.StartPauseButton.Name = "StartPauseButton";
             this.StartPauseButton.Size = new System.Drawing.Size(47, 20);
             this.StartPauseButton.TabIndex = 6;
@@ -379,7 +388,7 @@
             this.VideoBox.ContextMenuStrip = this.MaskContextMenuStrip;
             this.VideoBox.Location = new System.Drawing.Point(6, 19);
             this.VideoBox.Name = "VideoBox";
-            this.VideoBox.Size = new System.Drawing.Size(635, 362);
+            this.VideoBox.Size = new System.Drawing.Size(635, 347);
             this.VideoBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.VideoBox.TabIndex = 1;
             this.VideoBox.TabStop = false;
@@ -652,13 +661,14 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(928, 530);
+            this.ClientSize = new System.Drawing.Size(928, 515);
             this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.mainMenuStrip);
             this.MainMenuStrip = this.mainMenuStrip;
             this.Name = "MainForm";
-            this.Text = "Simple Player";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.Text = "FlyCatcher";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.DragDroped);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainForm_DragEnter);
