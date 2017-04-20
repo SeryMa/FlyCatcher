@@ -66,8 +66,8 @@ d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AFo
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.FFMPEG.xml
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\bin\Debug\AForge.Video.VFW.xml
-d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.csprojResolveAssemblyReference.cache
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.MainForm.resources
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.Properties.Resources.resources
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.VideoInputForm.resources
 d:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.csproj.GenerateResource.Cache
+D:\Users\Martin_Sery\Source\Repos\FlyCatcher\FlyCatcher\FlyCatcher\obj\Debug\FlyCatcher.csprojResolveAssemblyReference.cache

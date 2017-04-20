@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Collections;
-using System.Diagnostics;
 using System.IO;
 
 using AForge.Video.FFMPEG;
@@ -13,7 +10,7 @@ using AForge.Video.VFW;
 
 namespace FlyCatcher
 {
-    interface IGiver<out T> : IEnumerable<T>
+    interface IGiver<out T> : IEnumerable<T>, IDisposable
     {
         T First { get; }
         T Actual { get; }
@@ -29,6 +26,8 @@ namespace FlyCatcher
         int RunTo { get; set; }
         int RunToMax { get; }
         int Step { get; set; }
+
+        string Path { get; }
     }
 
     class SeparatePhotoGiver : IGiver<Bitmap>
@@ -39,6 +38,7 @@ namespace FlyCatcher
         int digitCount;
 
         public int ActualIndex { get; set; }
+        public string Path { get; private set; }
 
         public Bitmap Actual
         { get { return this[ActualIndex]; } }
@@ -85,22 +85,18 @@ namespace FlyCatcher
         private string getMask(string file) => file.TrimEnd(Constants.Digits.ToCharArray());
         private string getLast(string file) => new string(file.Reverse().TakeWhile(char.IsDigit).Reverse().ToArray());
 
-
         /// <summary>
         /// Constructor for photo giver, that iterates over images in a folder.
         /// </summary>
-        /// <param name="photoMask"></param>
-        /// <param name="folder"></param>
-        /// <param name="fileSuffix"></param>
-        /// <param name="numbers"></param>
-        /// <param name="last"></param>
         public SeparatePhotoGiver(string path)
         {
-            string str = getLast(Path.GetFileNameWithoutExtension(path));
+            Path = System.IO.Path.GetDirectoryName(path);
 
-            init(getMask(Path.GetFileNameWithoutExtension(path)),
-                 Path.GetDirectoryName(path),
-                 Path.GetExtension(path),
+            string str = getLast(System.IO.Path.GetFileNameWithoutExtension(path));
+
+            init(getMask(System.IO.Path.GetFileNameWithoutExtension(path)),
+                 System.IO.Path.GetDirectoryName(path),
+                 System.IO.Path.GetExtension(path),
                  str.Length,
                  int.Parse(str)
                 );
@@ -116,18 +112,12 @@ namespace FlyCatcher
         /// <param name="last"></param>
         public SeparatePhotoGiver(string photoMask, string folder, string fileSuffix, int digitCount, int last)
         {
+            Path = folder;
             init(photoMask, folder, fileSuffix, digitCount, last);
         }
 
-        private string photoName(int index)
-        {
-            string num = index.ToString($"D{digitCount}");
-
-            Console.WriteLine($"{folder}\\{photoMask}{num}{fileSuffix}");
-
-            return $"{folder}\\{photoMask}{num}{fileSuffix}";
-        }
-
+        private string photoName(int index)=> $"{folder}\\{photoMask}{index.ToString($"D{digitCount}")}{fileSuffix}";
+        
         private bool validPhoto
         { get { return File.Exists(photoName(ActualIndex)); } }
 
@@ -142,23 +132,32 @@ namespace FlyCatcher
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Dispose()
+        {
+
+        }
     }
 
     class VideoMPEGGiver : IGiver<Bitmap>
     {
         private VideoFileReader reader;
         private Bitmap preview;
-        
+
+        public string Path { get; private set; }
+
         public VideoMPEGGiver(string path)
         {
+            Path = System.IO.Path.GetDirectoryName(path);
+
             reader = new VideoFileReader();
             reader.Open(path);
             preview = reader.ReadVideoFrame();
 
             //This is used to reset the reader to the default position and not loosing the first frame
             reader.Close();
-            reader.Open(path);            
-    }
+            reader.Open(path);
+        }
 
         public bool isValidIndex(int index) => true;
 
@@ -195,11 +194,15 @@ namespace FlyCatcher
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Dispose()=>reader.Dispose();
     }
 
     class VideoAVIGiver : IGiver<Bitmap>
     {
         private AVIReader reader;
+
+        public string Path { get; private set; }
 
         private Bitmap getFrame(int position)
         {
@@ -220,7 +223,8 @@ namespace FlyCatcher
             reader = new AVIReader();
             reader.Open(path);
 
-            RunToMax = reader.Length;
+            Path = System.IO.Path.GetDirectoryName(path);         
+
             RunFrom = 0;
             RunTo = RunToMax;
             Step = 1;
@@ -230,7 +234,7 @@ namespace FlyCatcher
 
         public Bitmap Actual { get { return getFrame(ActualIndex); } }
 
-        public int ActualIndex { get; set; }
+        public int ActualIndex { get { return reader.Position; } set { reader.Position = value; } }
 
         public Bitmap First { get { return getFrame(0); } }
 
@@ -243,19 +247,27 @@ namespace FlyCatcher
         { get; set; }
 
         public int RunToMax
-        { get; private set; }
+        { get { return reader.Length; } }
 
         public int Step
         { get; set; }
 
         public IEnumerator<Bitmap> GetEnumerator()
         {
-            yield return reader.GetNextFrame();
+            reader.Position = RunFrom;
 
-            for (int i = Step; i > 1; i--)
-                reader.Position++;
+            while (reader.Position <= RunTo)
+            {
+                yield return reader.GetNextFrame();
+
+                for (int i = Step; i > 1; i--)
+                    reader.Position++;
+            }
+            
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Dispose() => reader.Dispose();
     }
 }

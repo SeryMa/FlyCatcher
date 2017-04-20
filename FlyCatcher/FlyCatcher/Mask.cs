@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
-
-using AForge;
-using AForge.Imaging;
-using AForge.Imaging.Filters;
+﻿using System.Drawing;
 
 namespace FlyCatcher
 {
     interface IMask<in T>
     {
         string Tag { get; }
+        string PrintOut();
         bool IsIn(T point);
         void DrawMask(Graphics gr);
     }
@@ -22,7 +14,7 @@ namespace FlyCatcher
     {
         private Extensions.isInCurve curveFunction;
         public string Tag { get; }
-        protected RectangleF rect;
+        protected RectangleF percentRectangle;
 
         protected static Font drawFont = new Font("Arial", 16);
         protected static SolidBrush drawBrush = new SolidBrush(Color.GreenYellow);
@@ -30,14 +22,16 @@ namespace FlyCatcher
 
         public override string ToString() => Tag;
 
-        public virtual void DrawMask(Graphics gr) => gr.DrawString(Tag, drawFont, drawBrush, MathFunctions.PercentToValue(0, gr.ClipBounds.Width, rect.X), MathFunctions.PercentToValue(0, gr.ClipBounds.Height, rect.Y));
+        public virtual string PrintOut() => $"{Tag} {percentRectangle.Left} {percentRectangle.Top} {percentRectangle.Right} {percentRectangle.Bottom}";
 
-        protected CurveMask(Extensions.isInCurve curveFunction, RectangleF draw, string tag)
+        public virtual void DrawMask(Graphics gr) => gr.DrawString(Tag, drawFont, drawBrush, MathFunctions.PercentToValue(0, gr.ClipBounds.Width, percentRectangle.X), MathFunctions.PercentToValue(0, gr.ClipBounds.Height, percentRectangle.Y));
+
+        protected CurveMask(Extensions.isInCurve curveFunction, RectangleF percentRect, string tag)
         {
             this.curveFunction = curveFunction;
             this.Tag = tag;
 
-            rect = draw;
+            percentRectangle = percentRect;
         }
 
         public bool IsIn(AForge.Point point) => curveFunction(point);
@@ -52,8 +46,10 @@ namespace FlyCatcher
             base.DrawMask(gr);
 
             //gr.DrawRectangle(maskPen, rect);
-            gr.DrawRectangle(maskPen, MathFunctions.recalculateRectangle(rect, gr.ClipBounds).Round());
+            gr.DrawRectangle(maskPen, MathFunctions.recalculateRectangle(percentRectangle, gr.ClipBounds).Round());
         }
+
+        public override string PrintOut() => "rectangle =" + base.PrintOut();
     }
 
     class EllipMask : CurveMask
@@ -62,8 +58,10 @@ namespace FlyCatcher
 
         public override void DrawMask(Graphics gr)
         {
-            base.DrawMask(gr);            
-            gr.DrawEllipse(maskPen, MathFunctions.recalculateRectangle(rect, gr.ClipBounds));
+            base.DrawMask(gr);
+            gr.DrawEllipse(maskPen, MathFunctions.recalculateRectangle(percentRectangle, gr.ClipBounds));
         }
+
+        public override string PrintOut() => "ellipse = " + base.PrintOut();
     }
 }

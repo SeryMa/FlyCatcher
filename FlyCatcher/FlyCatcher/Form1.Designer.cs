@@ -17,6 +17,10 @@
             {
                 components.Dispose();
             }
+
+            if (Output != null) Output.Dispose();
+            if (pictureGiver != null) pictureGiver.Dispose();
+
             base.Dispose(disposing);
         }
 
@@ -120,26 +124,26 @@
             // openFileToolStrip
             // 
             this.openFileToolStrip.Name = "openFileToolStrip";
-            this.openFileToolStrip.Size = new System.Drawing.Size(152, 22);
+            this.openFileToolStrip.Size = new System.Drawing.Size(173, 22);
             this.openFileToolStrip.Text = "Open";
-            this.openFileToolStrip.Click += new System.EventHandler(this.openFile);
+            this.openFileToolStrip.Click += new System.EventHandler(this.openFileClick);
             // 
             // saveFileToolStrip
             // 
             this.saveFileToolStrip.Name = "saveFileToolStrip";
-            this.saveFileToolStrip.Size = new System.Drawing.Size(152, 22);
-            this.saveFileToolStrip.Text = "Save";
-            this.saveFileToolStrip.Click += new System.EventHandler(this.saveState);
+            this.saveFileToolStrip.Size = new System.Drawing.Size(173, 22);
+            this.saveFileToolStrip.Text = "Save configuration";
+            this.saveFileToolStrip.Click += new System.EventHandler(this.saveCurrentConfiguration);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(170, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -620,7 +624,7 @@
             0,
             0,
             0});
-            this.blobUpperBound.ValueChanged += new System.EventHandler(this.refreshActualFrame);
+            this.blobUpperBound.ValueChanged += new System.EventHandler(this.parametrsValueChanged);
             // 
             // blobLowerBound
             // 
@@ -638,7 +642,7 @@
             0,
             0,
             0});
-            this.blobLowerBound.ValueChanged += new System.EventHandler(this.refreshActualFrame);
+            this.blobLowerBound.ValueChanged += new System.EventHandler(this.parametrsValueChanged);
             // 
             // invertCheckBox
             // 
@@ -649,7 +653,7 @@
             this.invertCheckBox.TabIndex = 5;
             this.invertCheckBox.Text = "Invert colors";
             this.invertCheckBox.UseVisualStyleBackColor = true;
-            this.invertCheckBox.CheckedChanged += new System.EventHandler(this.refreshActualFrame);
+            this.invertCheckBox.CheckedChanged += new System.EventHandler(this.parametrsValueChanged);
             // 
             // openFileDialog
             // 

@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 using AForge.Imaging;
-using AForge.Imaging.Filters;
 using System.Drawing;
-using AForge;
 
 namespace FlyCatcher
 {

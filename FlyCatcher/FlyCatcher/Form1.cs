@@ -1,26 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.Linq;
-
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using System.Threading;
 
 using AForge.Video;
 
 using AForge.Imaging;
-using AForge.Imaging.Filters;
-using AForge.Math.Geometry;
-
-using AForge;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 
 
 namespace FlyCatcher
@@ -79,7 +68,7 @@ namespace FlyCatcher
 
         private void debugInit()
         {
-            pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", ".jpg", 5, 600);            
+            //pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", ".jpg", 5, 600);
 
             refreshActualFrame();
         }
@@ -90,6 +79,27 @@ namespace FlyCatcher
         private ILookup<string, string> getParameters(string path) => (from line in File.ReadLines(path) where line.Contains("=") select line.Split('='))
                                                                       .ToLookup(parsedLine => parsedLine[0].Trim(), s => s[1].Trim());
 
+        private void initPictureGiver(string path)
+        {
+            switch (Path.GetExtension(path))
+            {
+                case ".jpg":
+                case ".png":
+                case ".bmp":
+                    initPictureGiverWithSeparatePhotoGiver(path);
+                    break;
+                case ".avi":
+                    initPictureGiverWithAVIGiver(path);
+                    break;
+                case ".mpeg":
+                    initPictureGiverWithMPEGGiver(path);
+                    break;
+                default:
+                    break;
+            }
+
+            refreshActualFrame();
+        }
         private void initPictureGiverWithSeparatePhotoGiver(string path) => pictureGiver = new SeparatePhotoGiver(path);
         private void initPictureGiverWithAVIGiver(string path) => pictureGiver = new VideoAVIGiver(path);
         private void initPictureGiverWithMPEGGiver(string path) => pictureGiver = new VideoMPEGGiver(path);
@@ -176,16 +186,7 @@ namespace FlyCatcher
             if (Output != null)
                 Output.Close();
 
-            Output = new StreamWriter(path);
-        }
-
-        private void initState(string path)
-        {
-            if (ActualState != null)
-                ActualState.Close();
-
-            //TODO: copy previous state
-            ActualState = new StreamReader(path);
+            Output = new MyStream(path);            
         }
 
         private void InitParams(string path)
@@ -206,19 +207,12 @@ namespace FlyCatcher
                     case ".csv":
                         initOutput(path);
                         break;
-                    case ".state":
-                        initState(path);
-                        break;
                     case ".jpg":
                     case ".png":
-                    case ".bmp":
-                        initPictureGiverWithSeparatePhotoGiver(path);
-                        break;
+                    case ".bmp":                        
                     case ".avi":
-                        initPictureGiverWithAVIGiver(path);
-                        break;
                     case ".mpeg":
-                        initPictureGiverWithMPEGGiver(path);
+                        initPictureGiver(path);
                         break;
                     default:
                         break;
@@ -227,6 +221,10 @@ namespace FlyCatcher
             catch (VideoException ex)
             {
                 MessageBox.Show(ex.Message, "Failed loading video", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (FormatException ex)
+            {
+                MessageBox.Show(ex.Message, "Wrong file name format", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -240,16 +238,54 @@ namespace FlyCatcher
             refreshActualFrame();
         }
 
-        private void openFile(object sender, EventArgs e)
+        private void promptToOpenFile()
         {
             if (openDialog.ShowDialog(this) == DialogResult.OK)
                 foreach (var path in openDialog.FileNames)
-                    InitParams(path);            
+                    InitParams(path);
         }
 
-        private void saveState(object sender, EventArgs e)
-        {
+        private void openFileClick(object sender, EventArgs e) => promptToOpenFile();
 
+        private void saveCurrentConfiguration(object sender, EventArgs e)
+        {
+            SaveFileDialog dial = new SaveFileDialog();
+
+            dial.FilterIndex = 1;
+            dial.RestoreDirectory = true;
+            dial.AddExtension = true;
+            dial.DefaultExt = ".config";
+            dial.Filter = @"Config Files(*.config) | *.config | Masks (*.mask) | *.mask ";
+
+            if (dial.ShowDialog(this) != DialogResult.OK) return;
+
+            StreamWriter stream = new StreamWriter(dial.FileName);
+
+            if (Path.GetExtension(dial.FileName) == ".config")
+            {
+                stream.WriteLine($"history = {historyCount}");
+                stream.WriteLine($"penalty = {penaltyValue}");
+
+                stream.WriteLine($"max_size = {Math.Round(blobUpperBound.Value)}");
+                stream.WriteLine($"min_size = {Math.Round(blobLowerBound.Value)}");
+
+                stream.WriteLine($"height = {Math.Round(maskHeight.Value)}");
+                stream.WriteLine($"width = {Math.Round(maskWidth.Value)}");
+
+                stream.WriteLine($"invert_colors = {invertCheckBox.Checked}");
+            }
+            else            
+                stream.WriteLine($"clean = true");
+            
+            foreach (var mask in masks)            
+                stream.WriteLine(mask.PrintOut());
+            
+            //TODO: output & highlight
+            
+            //initOutputFormat(parameters);
+            //initHighlight(parameters);
+
+            stream.Close();            
         }
 
         private void MainForm_DragEnter(object sender, DragEventArgs e)
@@ -259,10 +295,7 @@ namespace FlyCatcher
         #endregion
 
         #region Output
-        private StreamReader ActualState;
-
-        private StreamWriter Output;
-        private FileStream tmpFile;
+        private MyStream Output;        
 
         private Constants.OutputFormat outputFormat;
         private Constants.HighlightFormat highlightFormat;
@@ -302,6 +335,8 @@ namespace FlyCatcher
         {
             if (Output == null) return;
 
+            Output.StartAppending();
+
             Output.Write($"{Constants.Delimeter}");
 
             foreach (var blobKeeper in blobKeepers)
@@ -313,11 +348,36 @@ namespace FlyCatcher
                 blobKeeper.PrintOutHeader(Output, outputFormat);
 
             Output.WriteLine();
+
+            Output.Flush();
+
+            Output.StopAppending();
+            Output.Close();
+
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (Output != null) Output.Close();
         }
         #endregion
 
         #region FlowControl
-        void refreshActualFrame() => proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);
+        void refreshActualFrame()
+        {
+            if (pictureGiver != null)
+            {
+                enableFlowControl();
+                proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);
+            }
+            else
+                disableFlowControl();
+        }
 
         void proccesFrame(Bitmap image, Action<IKeeper<Blob, double, double, AForge.Point>, IEnumerable<Blob>> action)
         {
@@ -342,24 +402,17 @@ namespace FlyCatcher
 
         private void Stop()
         {
-            Console.WriteLine("Stoping");
             StartPauseButton.Text = "Start";
             actualState = state.stoped;
             actualPicture = pictureGiver.RunFrom;
 
             printOutHeader();
 
-            if (Output == null) return;
-
-            Output.Flush();
-            Output.Close();
-
             refreshActualFrame();
         }
 
         private void Pause()
         {
-            Console.WriteLine("Stoping");
             StartPauseButton.Text = "Start";
             actualState = state.paused;
 
@@ -370,13 +423,11 @@ namespace FlyCatcher
 
         private void Start()
         {
-            Console.WriteLine("Starting");
             StartPauseButton.Text = "Pause";
             if (actualState == state.stoped)
                 RunAnalysis();
 
             actualState = state.runing;
-            Console.WriteLine("Running");
         }
 
         private enum state { stoped, runing, paused }
@@ -396,7 +447,6 @@ namespace FlyCatcher
                     break;
             }
         }
-
         private void StopButton_Click(object sender, EventArgs e)
         {
             switch (actualState)
@@ -419,39 +469,34 @@ namespace FlyCatcher
             {
                 foreach (Bitmap picture in pictureGiver)
                 {
-                    switch (actualState)
-                    {
-                        case state.runing:
-                            proccesFrame(picture, Extensions.ActualizeBlobKeeper);
-
-                            printOut(pictureGiver.ActualIndex);
-                            videoSlider.crossThreadOperation(() => adjustSliders());
-
-                            break;
-                        case state.stoped:
-                        case state.paused:
-                        //TODO: pausing handling - something better than active waiting for the switch of state.
-                        //Althought there is only one Task with the code, so the active waiting in paused state is not so big overhead...
-                        default:
-                            break;
-                    }
-
                     if (actualState == state.stoped)
                         break;
+
+                    //TODO: pausing handling - something better than active waiting for the switch of state.
+                    //Althought there is only one Task with the code, so the active waiting in paused state is not so big overhead...
+                    while (actualState == state.paused) ;
+
+                    proccesFrame(picture, Extensions.ActualizeBlobKeeper);
+
+                    printOut(pictureGiver.ActualIndex);
+                    videoSlider.crossThreadOperation(() => adjustSliders());
                 }
 
-                Console.WriteLine("Done");
+                Stop();
             }).Start();
-        }
-
-        private void refreshActualFrame(object sender, EventArgs e)
-        {
-            Console.WriteLine("Refreshing...");
-            refreshActualFrame();
         }
         #endregion
 
         #region VideoControl
+        void enableFlowControl() => setFlowControl(true);
+        void disableFlowControl() => setFlowControl(false);
+        void setFlowControl(bool enabled)
+        {
+            //StopButton.Enabled = StartPauseButton.Enabled
+            foreach (Control control in videoGroupBox.Controls)
+                control.Enabled = enabled;
+        }
+
         int actualPicture
         {
             get { return pictureGiver.ActualIndex; }
@@ -529,19 +574,17 @@ namespace FlyCatcher
                 runAnalysisTo.Value = runAnalysisFrom.Value;
         }
 
-        private void parametrsValueChanged(object sender, EventArgs e)
-        {
-            refreshActualFrame();
-        }
+        private void parametrsValueChanged(object sender, EventArgs e) => refreshActualFrame();
+        
         #endregion
 
         #region Masking
 
         private static Pen maskHighliter = new Pen(Color.Red, 4);
-        enum DrawStyle { None, Ellipse, Rectangle, Curve };
 
+        enum DrawStyle { None, Ellipse, Rectangle, Curve };
         DrawStyle actualStyle = DrawStyle.None;
-        bool isOkayToDraw() { return actualStyle != DrawStyle.None; }
+        
         string maskTag { get { return maskTagBox.Text; } }
         RectangleF drawRectangle;
 
@@ -550,6 +593,8 @@ namespace FlyCatcher
         float wheelCorrection = 1200;
 
         delegate void drawEvent();
+
+        bool isOkayToDraw()=>pictureGiver != null && actualStyle != DrawStyle.None;        
 
         private void addMask(DrawStyle style, RectangleF percentRectangle, string tag)
         {
@@ -688,16 +733,5 @@ namespace FlyCatcher
         private void displayMask(object sender, EventArgs e) => Refresh();
 
         #endregion
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (ActualState != null) ActualState.Close();
-            if (Output != null) Output.Close();
-        }
     }
 }

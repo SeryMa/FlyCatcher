@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing.Imaging;
 
 using AForge.Imaging;
@@ -13,7 +11,7 @@ namespace FlyCatcher
 {
     static class MathFunctions
     {
-        public static double ValueToPercent(double min, double max, double actual) => 100 * ((actual - min) / (max - min));
+        public static double ValueToPercent(double min, double max, double actual) => max == min ? 0 : 100 * ((actual - min) / (max - min));
         public static double ValueToPercent(double max, double actual) => ValueToPercent(0, max, actual);
         public static int PercentToValue(double min, double max, double percent) => (int)Math.Floor(min + ((percent / 100) * (max - min)));
         public static int PercentToValue(double max, double percent) => PercentToValue(0, max, percent);
@@ -262,7 +260,7 @@ namespace FlyCatcher
         public const string FileExtensions = @"
 Image Files(*.bmp; *.jpg; *.png)| *.BMP; *.JPG; *.png |
 Video Files(*.AVI; *.MPEG)| *.AVI; *.MPEG |
-Config Files(*.config; *.mask; *.state; *.output) | *.config; *.mask; *.state; *.output |
+Config Files(*.config; *.mask) | *.config; *.mask; |
 Output Files(*.csv) | *.csv; |
 All files(*.*) | *.*";
 
