@@ -20,10 +20,14 @@ namespace FlyCatcher
 
         bool isValidIndex(int index);
 
+        void Restart();
+
         int ActualIndex { get; set; }
 
         int RunFrom { get; set; }
         int RunTo { get; set; }
+
+        int RunFromMin { get; }
         int RunToMax { get; }
         int Step { get; set; }
 
@@ -61,11 +65,15 @@ namespace FlyCatcher
         //TODO: problem with undefined values
         public int RunToMax
         { get; private set; }
+        public int RunFromMin
+        { get; private set; }
 
         public int Step
         { get; set; }
 
         public bool isValidIndex(int index) => index >= 0 && index <= RunToMax;
+
+        public void Restart()=>ActualIndex = RunFromMin;        
 
         private void init(string photoMask, string folder, string fileSuffix, int numbers, int last)
         {
@@ -77,6 +85,7 @@ namespace FlyCatcher
             this.folder = folder;
 
             RunToMax = last;
+            RunFromMin = 0;
             RunFrom = 0;
             RunTo = RunToMax;
             Step = 1;
@@ -90,7 +99,7 @@ namespace FlyCatcher
         /// </summary>
         public SeparatePhotoGiver(string path)
         {
-            Path = System.IO.Path.GetDirectoryName(path);
+            Path = path;
 
             string str = getLast(System.IO.Path.GetFileNameWithoutExtension(path));
 
@@ -112,7 +121,7 @@ namespace FlyCatcher
         /// <param name="last"></param>
         public SeparatePhotoGiver(string photoMask, string folder, string fileSuffix, int digitCount, int last)
         {
-            Path = folder;
+            Path = photoName(last);
             init(photoMask, folder, fileSuffix, digitCount, last);
         }
 
@@ -133,10 +142,7 @@ namespace FlyCatcher
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose(){}
     }
 
     class VideoMPEGGiver : IGiver<Bitmap>
@@ -148,18 +154,25 @@ namespace FlyCatcher
 
         public VideoMPEGGiver(string path)
         {
-            Path = System.IO.Path.GetDirectoryName(path);
+            Path = path;
 
             reader = new VideoFileReader();
             reader.Open(path);
             preview = reader.ReadVideoFrame();
 
             //This is used to reset the reader to the default position and not loosing the first frame
-            reader.Close();
-            reader.Open(path);
+            Restart();
+
+            Step = 1;
         }
 
         public bool isValidIndex(int index) => true;
+
+        public void Restart()
+        {
+            reader.Close();
+            reader.Open(Path);
+        }
 
         public Bitmap this[int index]
         { get { return preview; } }
@@ -168,7 +181,7 @@ namespace FlyCatcher
         { get { return preview; } }
 
         public int ActualIndex
-        { get; set; }
+        { get { return 0; } set { } }
 
         public Bitmap First
         { get { return preview; } }
@@ -177,20 +190,29 @@ namespace FlyCatcher
         { get { return preview; } }
 
         public int RunFrom
-        { get; set; }
+        { get { return 0; } set { } }
 
         public int RunTo
-        { get; set; }
+        { get { return 0; }  set { } }
 
         public int RunToMax
-        { get; private set; }
+        { get { return 0; } }
+        public int RunFromMin
+        { get { return 0; } }
 
         public int Step
         { get; set; }
 
         public IEnumerator<Bitmap> GetEnumerator()
         {
-            yield return reader.ReadVideoFrame();
+            while (reader.IsOpen)
+            {
+                yield return reader.ReadVideoFrame();
+
+                for (int i = Step; i > 1; i--)
+                    reader.ReadVideoFrame();
+            }
+            
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -218,12 +240,17 @@ namespace FlyCatcher
 
         public bool isValidIndex(int index) => index >= 0 && index <= RunToMax;
 
+        public void Restart()
+        {
+            ActualIndex = RunFromMin;
+        }
+
         public VideoAVIGiver(string path)
         {
             reader = new AVIReader();
             reader.Open(path);
 
-            Path = System.IO.Path.GetDirectoryName(path);         
+            Path = path;         
 
             RunFrom = 0;
             RunTo = RunToMax;
@@ -248,6 +275,8 @@ namespace FlyCatcher
 
         public int RunToMax
         { get { return reader.Length; } }
+        public int RunFromMin
+        { get { return 0; } }
 
         public int Step
         { get; set; }

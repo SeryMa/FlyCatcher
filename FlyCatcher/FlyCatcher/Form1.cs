@@ -60,6 +60,8 @@ namespace FlyCatcher
             blobCounter = new PictureBlobCounter(this);
             blobKeepers = new List<IKeeper<Blob, double, double, AForge.Point>>();
 
+            DisplayControl.SelectedIndex = 0;
+
             //TODO: make init
             debugInit();
         }
@@ -97,6 +99,10 @@ namespace FlyCatcher
                 default:
                     break;
             }
+
+            runAnalysisFrom.Minimum = actualIndex.Minimum = runAnalysisTo.Minimum = pictureGiver.RunFromMin;
+            runAnalysisFrom.Maximum = actualIndex.Maximum = runAnalysisTo.Maximum = step.Maximum = pictureGiver.RunToMax;
+            
 
             refreshActualFrame();
         }
@@ -186,11 +192,13 @@ namespace FlyCatcher
             if (Output != null)
                 Output.Close();
 
-            Output = new MyStream(path);            
+            Output = new MyStream(path);
         }
 
         private void InitParams(string path)
         {
+            path = path.ToLower();
+
             try
             {
                 switch (Path.GetExtension(path))
@@ -209,7 +217,7 @@ namespace FlyCatcher
                         break;
                     case ".jpg":
                     case ".png":
-                    case ".bmp":                        
+                    case ".bmp":
                     case ".avi":
                     case ".mpeg":
                         initPictureGiver(path);
@@ -274,18 +282,18 @@ namespace FlyCatcher
 
                 stream.WriteLine($"invert_colors = {invertCheckBox.Checked}");
             }
-            else            
+            else
                 stream.WriteLine($"clean = true");
-            
-            foreach (var mask in masks)            
+
+            foreach (var mask in masks)
                 stream.WriteLine(mask.PrintOut());
-            
+
             //TODO: output & highlight
-            
+
             //initOutputFormat(parameters);
             //initHighlight(parameters);
 
-            stream.Close();            
+            stream.Close();
         }
 
         private void MainForm_DragEnter(object sender, DragEventArgs e)
@@ -295,7 +303,7 @@ namespace FlyCatcher
         #endregion
 
         #region Output
-        private MyStream Output;        
+        private MyStream Output;
 
         private Constants.OutputFormat outputFormat;
         private Constants.HighlightFormat highlightFormat;
@@ -390,25 +398,52 @@ namespace FlyCatcher
                                                                  where blobKeeper.Tag == blobWithTag.Item1
                                                                  select blobWithTag.Item2));
 
-            //TOOD: make only one videobox, where proccessed & raw image & introduce switching between them
+            DisplayControl.crossThreadOperation(() =>
+                {
+                    switch ((string)DisplayControl.SelectedItem)
+                    {
+                        case "Raw image":
+                            highlightBlobs(rawImage);
+                            break;
+                        case "Processed":
+                            highlightBlobs(processedImage);
+                            break;
+                        case "None":
+                        default:
+                            break;
+                    }
+                });
 
-            if (DisplayOriginal.Checked)
-                highlightBlobs(rawImage);
-            else
-                highlightBlobs(processedImage);
         }
 
         Bitmap processImage(Bitmap image) => pictureProcessor.processItem(image);
 
+        void enableAll() => switchEnability(true);
+        void disableAll() => switchEnability(false);
+
+        void switchEnability(bool enabled)
+        {
+            foreach (Control control in Controls)
+                control.Enabled = enabled;
+
+            setFlowControl(enabled);
+
+            StopButton.Enabled = true;
+            StartPauseButton.Enabled = true;
+        }
+
         private void Stop()
         {
             StartPauseButton.Text = "Start";
-            actualState = state.stoped;
-            actualPicture = pictureGiver.RunFrom;
-
+            actualState = state.stoped;            
+            
             printOutHeader();
 
-            refreshActualFrame();
+            //TODO: think about the consequences
+            pictureGiver.Restart();
+            adjustSliders();
+
+            enableAll();
         }
 
         private void Pause()
@@ -424,10 +459,14 @@ namespace FlyCatcher
         private void Start()
         {
             StartPauseButton.Text = "Pause";
+
+            //When the state is Running nothing ought to happen
+            //When the state is Paused then the Task is actively waiting to be running again
             if (actualState == state.stoped)
                 RunAnalysis();
 
             actualState = state.runing;
+            disableAll();
         }
 
         private enum state { stoped, runing, paused }
@@ -482,7 +521,7 @@ namespace FlyCatcher
                     videoSlider.crossThreadOperation(() => adjustSliders());
                 }
 
-                Stop();
+                this.crossThreadOperation(()=> Stop());
             }).Start();
         }
         #endregion
@@ -492,45 +531,35 @@ namespace FlyCatcher
         void disableFlowControl() => setFlowControl(false);
         void setFlowControl(bool enabled)
         {
-            //StopButton.Enabled = StartPauseButton.Enabled
             foreach (Control control in videoGroupBox.Controls)
                 control.Enabled = enabled;
-        }
 
+            runAnalysisFrom.Enabled = !beginingBias.Checked;
+            runAnalysisTo.Enabled = !endingBias.Checked;
+        }
+        
         int actualPicture
         {
             get { return pictureGiver.ActualIndex; }
             set
             {
-                if (value > pictureGiver.RunTo)
-                {
-                    pictureGiver.ActualIndex = pictureGiver.RunTo;
-                    actualIndex.Value = actualPicture;
-                }
-                else
-                    pictureGiver.ActualIndex = value;
+                pictureGiver.ActualIndex = Math.Min(pictureGiver.RunTo, Math.Max(pictureGiver.RunFrom, value));
 
+                actualIndex.Value = pictureGiver.ActualIndex;
                 videoSlider.crossThreadOperation(() => adjustSliders());
             }
         }
+
         private void videoSlider_Scroll(object sender, EventArgs e)
-        {
-            actualPicture = MathFunctions.PercentToValue(pictureGiver.RunFrom, pictureGiver.RunTo, videoSlider.Value);
-            actualIndex.Value = actualPicture;
+            =>actualPicture = MathFunctions.PercentToValue(pictureGiver.RunFrom, pictureGiver.RunTo, videoSlider.Value);            
+        
 
-            refreshActualFrame();
-        }
-
-        private void pictureSelected(object sender, EventArgs e)
-        {
-            actualPicture = (int)actualIndex.Value;
-            refreshActualFrame();
-        }
+        private void pictureSelected(object sender, EventArgs e)=>actualPicture = (int)actualIndex.Value;                    
 
         private void beginingBias_CheckedChanged(object sender, EventArgs e)
         {
-            runAnalysisFrom.Enabled = !beginingBias.Checked;
-            runAnalysisFrom.Value = 0;
+            runAnalysisFrom.Enabled = !beginingBias.Checked;            
+            runAnalysisFrom.Value = runAnalysisFrom.Minimum;
 
             adjustSliders();
         }
@@ -538,30 +567,32 @@ namespace FlyCatcher
         private void endingBias_CheckedChanged(object sender, EventArgs e)
         {
             runAnalysisTo.Enabled = !endingBias.Checked;
-            runAnalysisTo.Value = pictureGiver.RunToMax;
+            runAnalysisTo.Value = runAnalysisTo.Maximum;
 
             adjustSliders();
         }
 
         private void runAnalysisFrom_ValueChanged(object sender, EventArgs e)
-        {
+        {            
             pictureGiver.RunFrom = (int)runAnalysisFrom.Value;
-            adjustSliders();
+            actualPicture = Math.Max(pictureGiver.RunFrom, actualPicture);            
         }
 
         private void runAnalysisTo_ValueChanged(object sender, EventArgs e)
         {
             pictureGiver.RunTo = (int)runAnalysisTo.Value;
-            adjustSliders();
+            actualPicture = Math.Min(actualPicture, pictureGiver.RunTo);
         }
 
         private void adjustSliders()
         {
-            videoSlider.Value = (int)Math.Floor(MathFunctions.ValueToPercent(pictureGiver.RunFrom, pictureGiver.RunTo, actualPicture));
-
             checkForOverlap();
+
+            videoSlider.Value = (int)Math.Floor(MathFunctions.ValueToPercent(pictureGiver.RunFrom, pictureGiver.RunTo, actualPicture));
+            refreshActualFrame();
         }
 
+        //Should be obsollete now
         private void checkForOverlap()
         {
             if ((int)runAnalysisTo.Value > pictureGiver.RunTo)
@@ -574,8 +605,15 @@ namespace FlyCatcher
                 runAnalysisTo.Value = runAnalysisFrom.Value;
         }
 
+
+        private void step_ValueChanged(object sender, EventArgs e)
+        {
+            pictureGiver.Step = (int)step.Value; 
+            actualIndex.Increment = step.Value;
+        }
+
         private void parametrsValueChanged(object sender, EventArgs e) => refreshActualFrame();
-        
+
         #endregion
 
         #region Masking
@@ -584,7 +622,7 @@ namespace FlyCatcher
 
         enum DrawStyle { None, Ellipse, Rectangle, Curve };
         DrawStyle actualStyle = DrawStyle.None;
-        
+
         string maskTag { get { return maskTagBox.Text; } }
         RectangleF drawRectangle;
 
@@ -594,7 +632,7 @@ namespace FlyCatcher
 
         delegate void drawEvent();
 
-        bool isOkayToDraw()=>pictureGiver != null && actualStyle != DrawStyle.None;        
+        bool isOkayToDraw() => pictureGiver != null && actualStyle != DrawStyle.None;
 
         private void addMask(DrawStyle style, RectangleF percentRectangle, string tag)
         {
@@ -733,5 +771,6 @@ namespace FlyCatcher
         private void displayMask(object sender, EventArgs e) => Refresh();
 
         #endregion
+
     }
 }

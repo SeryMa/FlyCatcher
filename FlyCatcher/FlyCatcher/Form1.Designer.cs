@@ -49,6 +49,7 @@
             this.maskTagBox = new System.Windows.Forms.TextBox();
             this.maskControlContainer = new System.Windows.Forms.ListBox();
             this.videoGroupBox = new System.Windows.Forms.GroupBox();
+            this.step = new System.Windows.Forms.NumericUpDown();
             this.StopButton = new System.Windows.Forms.Button();
             this.endingBias = new System.Windows.Forms.CheckBox();
             this.beginingBias = new System.Windows.Forms.CheckBox();
@@ -64,11 +65,11 @@
             this.MaskRectangle = new System.Windows.Forms.ToolStripMenuItem();
             this.drawCurveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.controlGroupBox = new System.Windows.Forms.GroupBox();
+            this.DisplayControl = new System.Windows.Forms.ComboBox();
             this.filterStyleCheckBox = new System.Windows.Forms.CheckBox();
             this.blueCoeficientControl = new System.Windows.Forms.NumericUpDown();
             this.greenCoeficientControl = new System.Windows.Forms.NumericUpDown();
             this.redCoeficientControl = new System.Windows.Forms.NumericUpDown();
-            this.DisplayOriginal = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.maskHeight = new System.Windows.Forms.NumericUpDown();
             this.maskWidth = new System.Windows.Forms.NumericUpDown();
@@ -84,6 +85,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.highlightBlobPictureBox)).BeginInit();
             this.maskGroupBox.SuspendLayout();
             this.videoGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.step)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisFrom)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).BeginInit();
@@ -256,6 +258,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.videoGroupBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.videoGroupBox.Controls.Add(this.step);
             this.videoGroupBox.Controls.Add(this.StopButton);
             this.videoGroupBox.Controls.Add(this.endingBias);
             this.videoGroupBox.Controls.Add(this.beginingBias);
@@ -271,6 +274,32 @@
             this.videoGroupBox.TabIndex = 3;
             this.videoGroupBox.TabStop = false;
             this.videoGroupBox.Text = "Video";
+            // 
+            // step
+            // 
+            this.step.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.step.Location = new System.Drawing.Point(158, 420);
+            this.step.Maximum = new decimal(new int[] {
+            100000000,
+            0,
+            0,
+            0});
+            this.step.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.step.Name = "step";
+            this.step.Size = new System.Drawing.Size(40, 20);
+            this.step.TabIndex = 15;
+            this.step.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.step.ThousandsSeparator = true;
+            this.step.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.step.ValueChanged += new System.EventHandler(this.step_ValueChanged);
             // 
             // StopButton
             // 
@@ -289,7 +318,7 @@
             this.endingBias.AutoSize = true;
             this.endingBias.Checked = true;
             this.endingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.endingBias.Location = new System.Drawing.Point(393, 421);
+            this.endingBias.Location = new System.Drawing.Point(414, 421);
             this.endingBias.Name = "endingBias";
             this.endingBias.Size = new System.Drawing.Size(79, 17);
             this.endingBias.TabIndex = 13;
@@ -303,7 +332,7 @@
             this.beginingBias.AutoSize = true;
             this.beginingBias.Checked = true;
             this.beginingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.beginingBias.Location = new System.Drawing.Point(229, 421);
+            this.beginingBias.Location = new System.Drawing.Point(250, 421);
             this.beginingBias.Name = "beginingBias";
             this.beginingBias.Size = new System.Drawing.Size(112, 17);
             this.beginingBias.TabIndex = 12;
@@ -315,7 +344,7 @@
             // 
             this.runAnalysisTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisTo.Enabled = false;
-            this.runAnalysisTo.Location = new System.Drawing.Point(347, 420);
+            this.runAnalysisTo.Location = new System.Drawing.Point(368, 420);
             this.runAnalysisTo.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -332,7 +361,7 @@
             // 
             this.runAnalysisFrom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisFrom.Enabled = false;
-            this.runAnalysisFrom.Location = new System.Drawing.Point(183, 420);
+            this.runAnalysisFrom.Location = new System.Drawing.Point(204, 420);
             this.runAnalysisFrom.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -348,7 +377,7 @@
             // actualIndex
             // 
             this.actualIndex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.actualIndex.Location = new System.Drawing.Point(137, 420);
+            this.actualIndex.Location = new System.Drawing.Point(112, 420);
             this.actualIndex.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -443,11 +472,11 @@
             // 
             // controlGroupBox
             // 
+            this.controlGroupBox.Controls.Add(this.DisplayControl);
             this.controlGroupBox.Controls.Add(this.filterStyleCheckBox);
             this.controlGroupBox.Controls.Add(this.blueCoeficientControl);
             this.controlGroupBox.Controls.Add(this.greenCoeficientControl);
             this.controlGroupBox.Controls.Add(this.redCoeficientControl);
-            this.controlGroupBox.Controls.Add(this.DisplayOriginal);
             this.controlGroupBox.Controls.Add(this.label2);
             this.controlGroupBox.Controls.Add(this.maskHeight);
             this.controlGroupBox.Controls.Add(this.maskWidth);
@@ -461,6 +490,20 @@
             this.controlGroupBox.TabIndex = 7;
             this.controlGroupBox.TabStop = false;
             this.controlGroupBox.Text = "Controls";
+            // 
+            // DisplayControl
+            // 
+            this.DisplayControl.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.DisplayControl.FormattingEnabled = true;
+            this.DisplayControl.Items.AddRange(new object[] {
+            "Raw image",
+            "Processed",
+            "None"});
+            this.DisplayControl.Location = new System.Drawing.Point(6, 193);
+            this.DisplayControl.Name = "DisplayControl";
+            this.DisplayControl.Size = new System.Drawing.Size(80, 21);
+            this.DisplayControl.TabIndex = 15;
+            this.DisplayControl.SelectedIndexChanged += new System.EventHandler(this.parametrsValueChanged);
             // 
             // filterStyleCheckBox
             // 
@@ -544,17 +587,6 @@
             0,
             262144});
             this.redCoeficientControl.ValueChanged += new System.EventHandler(this.parametrsValueChanged);
-            // 
-            // DisplayOriginal
-            // 
-            this.DisplayOriginal.AutoSize = true;
-            this.DisplayOriginal.Location = new System.Drawing.Point(6, 195);
-            this.DisplayOriginal.Name = "DisplayOriginal";
-            this.DisplayOriginal.Size = new System.Drawing.Size(79, 17);
-            this.DisplayOriginal.TabIndex = 10;
-            this.DisplayOriginal.Text = "Raw image";
-            this.DisplayOriginal.UseVisualStyleBackColor = true;
-            this.DisplayOriginal.CheckedChanged += new System.EventHandler(this.parametrsValueChanged);
             // 
             // label2
             // 
@@ -687,6 +719,7 @@
             this.maskGroupBox.PerformLayout();
             this.videoGroupBox.ResumeLayout(false);
             this.videoGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.step)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisTo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.runAnalysisFrom)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.actualIndex)).EndInit();
@@ -746,13 +779,14 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox HighlightBlob;
         private System.Windows.Forms.PictureBox highlightBlobPictureBox;
-        private System.Windows.Forms.CheckBox DisplayOriginal;
         private System.Windows.Forms.Button StopButton;
         private System.Windows.Forms.NumericUpDown blueCoeficientControl;
         private System.Windows.Forms.NumericUpDown greenCoeficientControl;
         private System.Windows.Forms.NumericUpDown redCoeficientControl;
         private System.Windows.Forms.CheckBox filterStyleCheckBox;
         private System.Windows.Forms.Button MaskRemoval;
+        private System.Windows.Forms.ComboBox DisplayControl;
+        private System.Windows.Forms.NumericUpDown step;
     }
 }
 
