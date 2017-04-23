@@ -62,19 +62,12 @@ namespace FlyCatcher
 
             DisplayControl.SelectedIndex = 0;
 
-            //TODO: make init
-            debugInit();
-        }
-
-        #region Init
-
-        private void debugInit()
-        {
-            //pictureGiver = new SeparatePhotoGiver("Untitled.avi_", "D:\\Users\\Martin_Sery\\Documents\\Work\\Natočená videa", ".jpg", 5, 600);
-
+            
             refreshActualFrame();
         }
 
+        #region Init
+        
         T getParameter<T>(string parameter, ILookup<string, string> parameters, T def, Extensions.Transform<T, string> transform)
             => parameters != null && parameters.Contains(parameter) ? transform(parameters[parameter].First()) : def;
 
@@ -102,15 +95,18 @@ namespace FlyCatcher
 
             runAnalysisFrom.Minimum = actualIndex.Minimum = runAnalysisTo.Minimum = pictureGiver.RunFromMin;
             runAnalysisFrom.Maximum = actualIndex.Maximum = runAnalysisTo.Maximum = step.Maximum = pictureGiver.RunToMax;
-            
 
+            videoGroupBox.Text = $"Video - {pictureGiver.Tag}";
+            fpsLabel.Text = $"{pictureGiver.Tag}";
+            Text = $"FlyCatcher - {pictureGiver.Tag}";
+
+            enableFlowControl();
             refreshActualFrame();
         }
         private void initPictureGiverWithSeparatePhotoGiver(string path) => pictureGiver = new SeparatePhotoGiver(path);
         private void initPictureGiverWithAVIGiver(string path) => pictureGiver = new VideoAVIGiver(path);
         private void initPictureGiverWithMPEGGiver(string path) => pictureGiver = new VideoMPEGGiver(path);
 
-        private void initParams(string path) => initParams(getParameters(path));
         private void initParams(ILookup<string, string> parameters)
         {
             historyCount = getParameter("history", parameters, 10, int.Parse);
@@ -124,12 +120,10 @@ namespace FlyCatcher
 
             invertCheckBox.Checked = getParameter("invert_colors", parameters, true, bool.Parse);
 
-            initMask(parameters);
+            initMasks(parameters);
             initOutputFormat(parameters);
             initHighlight(parameters);
         }
-
-        private void initOutputFormat(string path) => initOutputFormat(getParameters(path));
         private void initOutputFormat(ILookup<string, string> parameters)
         {
             outputFormat = Constants.OutputFormat.None;
@@ -137,8 +131,6 @@ namespace FlyCatcher
             foreach (var tag in Constants.OutputTag)
                 outputFormat |= (getParameter(tag.Value, parameters, true, bool.Parse) ? tag.Key : Constants.OutputFormat.None);
         }
-
-        private void initHighlight(string path) => initHighlight(getParameters(path));
         private void initHighlight(ILookup<string, string> parameters)
         {
             highlightFormat = Constants.HighlightFormat.None;
@@ -149,9 +141,7 @@ namespace FlyCatcher
             //Special case which default value should be true, not false like with the others
             highlightFormat |= (getParameter(Constants.HighlightTag[Constants.HighlightFormat.Object], parameters, true, bool.Parse) ? Constants.HighlightFormat.Object : Constants.HighlightFormat.None);
         }
-
-        private void initMasks(string path) => initMask(getParameters(path));
-        private void initMask(ILookup<string, string> parameters)
+        private void initMasks(ILookup<string, string> parameters)
         {
             if (getParameter("clean", parameters, false, bool.Parse))
             {
@@ -204,13 +194,13 @@ namespace FlyCatcher
                 switch (Path.GetExtension(path))
                 {
                     case ".config":
-                        initParams(path);
+                        initParams(getParameters(path));
                         break;
                     case ".mask":
-                        initMasks(path);
+                        initMasks(getParameters(path));
                         break;
                     case ".output":
-                        initOutputFormat(path);
+                        initOutputFormat(getParameters(path));
                         break;
                     case ".csv":
                         initOutput(path);
@@ -318,11 +308,6 @@ namespace FlyCatcher
             foreach (var blobKeeper in blobKeepers)
                 blobKeeper.Draw(gr, highlightFormat);
 
-            //TODO: implement more carefully
-            if (blobKeepers.Count > 0 && blobKeepers.First().ItemsData.Count > 0)
-                highlightBlobPictureBox.Image = blobKeepers.First().ItemsData.First().First.Image.ToManagedImage();
-
-            highlightBlobPictureBox.crossThreadOperation(() => Refresh());
             VideoBox.crossThreadOperation(() => Refresh());
         }
 
@@ -378,11 +363,8 @@ namespace FlyCatcher
         #region FlowControl
         void refreshActualFrame()
         {
-            if (pictureGiver != null)
-            {
-                enableFlowControl();
-                proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);
-            }
+            if (pictureGiver != null)            
+                proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);            
             else
                 disableFlowControl();
         }
@@ -423,9 +405,12 @@ namespace FlyCatcher
 
         void switchEnability(bool enabled)
         {
-            foreach (Control control in Controls)
+            foreach (Control control in maskGroupBox.Controls)
                 control.Enabled = enabled;
 
+            foreach (Control control in controlGroupBox.Controls)
+                control.Enabled = enabled;
+            
             setFlowControl(enabled);
 
             StopButton.Enabled = true;

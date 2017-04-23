@@ -42,8 +42,6 @@
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.fpsLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
-            this.HighlightBlob = new System.Windows.Forms.GroupBox();
-            this.highlightBlobPictureBox = new System.Windows.Forms.PictureBox();
             this.maskGroupBox = new System.Windows.Forms.GroupBox();
             this.MaskRemoval = new System.Windows.Forms.Button();
             this.maskTagBox = new System.Windows.Forms.TextBox();
@@ -81,8 +79,6 @@
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
-            this.HighlightBlob.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.highlightBlobPictureBox)).BeginInit();
             this.maskGroupBox.SuspendLayout();
             this.videoGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.step)).BeginInit();
@@ -168,7 +164,6 @@
             // 
             // mainPanel
             // 
-            this.mainPanel.Controls.Add(this.HighlightBlob);
             this.mainPanel.Controls.Add(this.maskGroupBox);
             this.mainPanel.Controls.Add(this.videoGroupBox);
             this.mainPanel.Controls.Add(this.controlGroupBox);
@@ -177,29 +172,6 @@
             this.mainPanel.Name = "mainPanel";
             this.mainPanel.Size = new System.Drawing.Size(928, 469);
             this.mainPanel.TabIndex = 2;
-            // 
-            // HighlightBlob
-            // 
-            this.HighlightBlob.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.HighlightBlob.Controls.Add(this.highlightBlobPictureBox);
-            this.HighlightBlob.Location = new System.Drawing.Point(12, 318);
-            this.HighlightBlob.Name = "HighlightBlob";
-            this.HighlightBlob.Size = new System.Drawing.Size(92, 141);
-            this.HighlightBlob.TabIndex = 10;
-            this.HighlightBlob.TabStop = false;
-            this.HighlightBlob.Text = "Highlight";
-            // 
-            // highlightBlobPictureBox
-            // 
-            this.highlightBlobPictureBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.highlightBlobPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.highlightBlobPictureBox.Location = new System.Drawing.Point(3, 16);
-            this.highlightBlobPictureBox.Name = "highlightBlobPictureBox";
-            this.highlightBlobPictureBox.Size = new System.Drawing.Size(86, 122);
-            this.highlightBlobPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.highlightBlobPictureBox.TabIndex = 14;
-            this.highlightBlobPictureBox.TabStop = false;
             // 
             // maskGroupBox
             // 
@@ -713,8 +685,6 @@
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.mainPanel.ResumeLayout(false);
-            this.HighlightBlob.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.highlightBlobPictureBox)).EndInit();
             this.maskGroupBox.ResumeLayout(false);
             this.maskGroupBox.PerformLayout();
             this.videoGroupBox.ResumeLayout(false);
@@ -777,8 +747,6 @@
         private System.Windows.Forms.NumericUpDown maskHeight;
         private System.Windows.Forms.NumericUpDown maskWidth;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.GroupBox HighlightBlob;
-        private System.Windows.Forms.PictureBox highlightBlobPictureBox;
         private System.Windows.Forms.Button StopButton;
         private System.Windows.Forms.NumericUpDown blueCoeficientControl;
         private System.Windows.Forms.NumericUpDown greenCoeficientControl;

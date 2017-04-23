@@ -7,6 +7,7 @@ using System.IO;
 
 using AForge.Video.FFMPEG;
 using AForge.Video.VFW;
+using AForge.Video;
 
 namespace FlyCatcher
 {
@@ -32,6 +33,7 @@ namespace FlyCatcher
         int Step { get; set; }
 
         string Path { get; }
+        string Tag { get; }
     }
 
     class SeparatePhotoGiver : IGiver<Bitmap>
@@ -43,6 +45,7 @@ namespace FlyCatcher
 
         public int ActualIndex { get; set; }
         public string Path { get; private set; }
+        public string Tag { get { return photoMask; } }
 
         public Bitmap Actual
         { get { return this[ActualIndex]; } }
@@ -73,7 +76,7 @@ namespace FlyCatcher
 
         public bool isValidIndex(int index) => index >= 0 && index <= RunToMax;
 
-        public void Restart()=>ActualIndex = RunFromMin;        
+        public void Restart() => ActualIndex = RunFromMin;
 
         private void init(string photoMask, string folder, string fileSuffix, int numbers, int last)
         {
@@ -125,8 +128,8 @@ namespace FlyCatcher
             init(photoMask, folder, fileSuffix, digitCount, last);
         }
 
-        private string photoName(int index)=> $"{folder}\\{photoMask}{index.ToString($"D{digitCount}")}{fileSuffix}";
-        
+        private string photoName(int index) => $"{folder}\\{photoMask}{index.ToString($"D{digitCount}")}{fileSuffix}";
+
         private bool validPhoto
         { get { return File.Exists(photoName(ActualIndex)); } }
 
@@ -142,7 +145,7 @@ namespace FlyCatcher
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Dispose(){}
+        public void Dispose() { }
     }
 
     class VideoMPEGGiver : IGiver<Bitmap>
@@ -151,6 +154,7 @@ namespace FlyCatcher
         private Bitmap preview;
 
         public string Path { get; private set; }
+        public string Tag { get { return System.IO.Path.GetFileNameWithoutExtension(Path); } }
 
         public VideoMPEGGiver(string path)
         {
@@ -193,7 +197,7 @@ namespace FlyCatcher
         { get { return 0; } set { } }
 
         public int RunTo
-        { get { return 0; }  set { } }
+        { get { return 0; } set { } }
 
         public int RunToMax
         { get { return 0; } }
@@ -212,12 +216,13 @@ namespace FlyCatcher
                 for (int i = Step; i > 1; i--)
                     reader.ReadVideoFrame();
             }
-            
+
+            //Restart();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Dispose()=>reader.Dispose();
+        public void Dispose() => reader.Dispose();
     }
 
     class VideoAVIGiver : IGiver<Bitmap>
@@ -225,6 +230,7 @@ namespace FlyCatcher
         private AVIReader reader;
 
         public string Path { get; private set; }
+        public string Tag { get { return System.IO.Path.GetFileNameWithoutExtension(Path); } }
 
         private Bitmap getFrame(int position)
         {
@@ -242,7 +248,7 @@ namespace FlyCatcher
 
         public void Restart()
         {
-            ActualIndex = RunFromMin;
+            ActualIndex = RunFrom;
         }
 
         public VideoAVIGiver(string path)
@@ -250,7 +256,7 @@ namespace FlyCatcher
             reader = new AVIReader();
             reader.Open(path);
 
-            Path = path;         
+            Path = path;
 
             RunFrom = 0;
             RunTo = RunToMax;
@@ -283,16 +289,21 @@ namespace FlyCatcher
 
         public IEnumerator<Bitmap> GetEnumerator()
         {
-            reader.Position = RunFrom;
+            int frameCounter;
 
-            while (reader.Position <= RunTo)
+            reader.Position = frameCounter = RunFrom;
+
+            do
             {
+                reader.Position = frameCounter;
                 yield return reader.GetNextFrame();
 
                 for (int i = Step; i > 1; i--)
-                    reader.Position++;
-            }
-            
+                    frameCounter++;
+
+            } while (frameCounter < RunTo);
+
+            //Restart();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
