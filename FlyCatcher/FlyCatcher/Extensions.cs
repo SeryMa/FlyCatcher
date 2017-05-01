@@ -149,7 +149,10 @@ namespace FlyCatcher
         public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, Alter<T> action) => from item in source select action(item);
 
         public delegate T Transform<out T, in U>(U item);
-        public static IEnumerable<T> ForEach<T, U>(this IEnumerable<U> source, Transform<T, U> action) => from item in source select action(item);
+        public static IEnumerable<T> ForEach<T, U>(this IEnumerable<U> source, Transform<T, U> action) => from item in source select action(item);        
+
+        public static IEnumerable<Tuple<T1, T2>> Zip<T1, T2>(this IEnumerable<T1> enum1, IEnumerable<T2> enum2)=>enum1.Zip(enum2, (item1, item2) => new Tuple<T1, T2>(item1, item2));
+        
 
         public delegate bool isInCurve(AForge.Point point);
 
@@ -158,14 +161,8 @@ namespace FlyCatcher
         public static AForge.Point Converse(this PointF point) => new AForge.Point(point.X, point.Y);
         public static AForge.Point Converse(this Point point) => new AForge.Point(point.X, point.Y);
 
-        public static void ActualizeBlobKeeper(IKeeper<Blob, double, double, AForge.Point> blobKeeper, IEnumerable<Blob> blobs)
-        {
-            blobKeeper.ActualizeData(blobs);
-        }
-        public static void RefreshBlobKeeper(IKeeper<Blob, double, double, AForge.Point> blobKeeper, IEnumerable<Blob> blobs)
-        {
-            blobKeeper.Refresh(blobs);
-        }
+        public static void ActualizeBlobKeeper(IKeeper<Blob, double, double, AForge.Point> blobKeeper, IEnumerable<Blob> blobs)=>blobKeeper.ActualizeData(blobs);
+        public static void RefreshBlobKeeper(IKeeper<Blob, double, double, AForge.Point> blobKeeper, IEnumerable<Blob> blobs)=>blobKeeper.Refresh(blobs);
 
         static Random rand = new Random();
         public static string GenerateString(int size)
@@ -245,8 +242,8 @@ namespace FlyCatcher
         public const string AlfaNumerics =
         "abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-        public const char Delimeter = ';';
-        public const char Blank = '-';
+        public const string Delimeter = ";";
+        public const string Blank = "";
 
         public const string JPGFileExtension = ".jpg";
         public const string PNGFileExtension = ".png";
@@ -258,10 +255,10 @@ namespace FlyCatcher
         public const string StateFileExtension = ".state";
 
         public const string FileExtensions = @"
-Image Files(*.bmp; *.jpg; *.png)| *.BMP; *.JPG; *.png |
 Video Files(*.AVI; *.MPEG)| *.AVI; *.MPEG |
 Config Files(*.config; *.mask) | *.config; *.mask; |
 Output Files(*.csv) | *.csv; |
+Image Files(*.bmp; *.jpg; *.png)| *.BMP; *.JPG; *.png |
 All files(*.*) | *.*";
         
 

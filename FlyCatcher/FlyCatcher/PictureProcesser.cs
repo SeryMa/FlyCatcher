@@ -12,7 +12,13 @@ namespace FlyCatcher
     {
         private MainForm owner;
         private Invert inv;
-        private BaseInPlacePartialFilter thresholding;
+        private BaseInPlacePartialFilter thresholding
+        {
+            get
+            {
+                return owner.threshold;
+            }
+        }
 
         private Grayscale gr;
         private Grayscale grayscale
@@ -35,10 +41,6 @@ namespace FlyCatcher
             this.owner = owner;
 
             inv = new Invert();
-
-            thresholding = new OtsuThreshold();
-            //thresholding = new Threshold();
-            //thresholding = new SISThreshold();
         }
 
         bool shouldInvert { get { return owner.shouldInvert; } }

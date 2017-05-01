@@ -165,12 +165,15 @@ namespace FlyCatcher
 
             Valid = true;
 
-            Tag = tag + Extensions.GenerateString(1);
+            Tag = tag;
 
             sumAll = 0;
 
             items = new LinkedList<Blob>();
             distances = new LinkedList<double>();
+
+            items.AddFirst(blob);
+            distances.AddFirst(0);
 
             items.AddFirst(blob);
         }
@@ -185,11 +188,9 @@ namespace FlyCatcher
             return addFirst(blob);
         }
 
+        #region Output
         public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
-        {
-            if (Valid)
-            {
-                if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
+        {       if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
                     writer.Write($"{items.First.Value.Area}{Constants.Delimeter}");
 
                 if (format.HasFlag(Constants.OutputFormat.AverageArea))
@@ -206,32 +207,15 @@ namespace FlyCatcher
 
                 if (format.HasFlag(Constants.OutputFormat.ImmediateSpeed))
                     writer.Write($"{distances.First.Value}{Constants.Delimeter}");
-            }
-            else
-            {
-                if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
-                    writer.Write($"{Constants.Blank}{Constants.Delimeter}");
-
-                if (format.HasFlag(Constants.OutputFormat.AverageArea))
-                    writer.Write($"{Constants.Blank}{Constants.Delimeter}");
-
-                if (format.HasFlag(Constants.OutputFormat.Position))
-                    writer.Write($"{Constants.Blank}{Constants.Delimeter}{Constants.Blank}{Constants.Delimeter}");
-
-                if (format.HasFlag(Constants.OutputFormat.Prediction))
-                    writer.Write($"{Constants.Blank}{Constants.Delimeter}{Constants.Blank}{Constants.Delimeter}");
-
-                if (format.HasFlag(Constants.OutputFormat.AverageSpeed))
-                    writer.Write($"{Constants.Blank}{Constants.Delimeter}");
-
-                if (format.HasFlag(Constants.OutputFormat.ImmediateSpeed))
-                    writer.Write($"{Constants.Blank}{Constants.Delimeter}");
-            }
+            
         }
         public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
         {
             if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
-                writer.Write($"Area{Constants.Delimeter}");
+                writer.Write($"Immediate area{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.AverageArea))
+                writer.Write($"Average area{Constants.Delimeter}");
 
             if (format.HasFlag(Constants.OutputFormat.Position))
                 writer.Write($"Pos X{Constants.Delimeter}Pos Y{Constants.Delimeter}");
@@ -240,13 +224,19 @@ namespace FlyCatcher
                 writer.Write($"Pred X{Constants.Delimeter}Pred Y{Constants.Delimeter}");
 
             if (format.HasFlag(Constants.OutputFormat.AverageSpeed))
-                writer.Write($"Speed{Constants.Delimeter}");
+                writer.Write($"Average speed{Constants.Delimeter}");
+            
+            if (format.HasFlag(Constants.OutputFormat.ImmediateSpeed))
+                writer.Write($"Immediate speed{Constants.Delimeter}");
         }
         public void PrintOutTag(StreamWriter writer, Constants.OutputFormat format)
         {
             writer.Write(Tag);
 
             if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
+                writer.Write($"{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.AverageArea))
                 writer.Write($"{Constants.Delimeter}");
 
             if (format.HasFlag(Constants.OutputFormat.Position))
@@ -256,6 +246,9 @@ namespace FlyCatcher
                 writer.Write($"{Constants.Delimeter}{Constants.Delimeter}");
 
             if (format.HasFlag(Constants.OutputFormat.AverageSpeed))
+                writer.Write($"{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.ImmediateSpeed))
                 writer.Write($"{Constants.Delimeter}");
         }
 
@@ -281,6 +274,7 @@ namespace FlyCatcher
         }
 
         public void MakeInvalid() => Valid = false;
-        //TODO: maybe more logic behind this...
+        //TODO: maybe more logic behind this...        
+        #endregion
     }
 }

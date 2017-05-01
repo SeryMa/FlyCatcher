@@ -18,9 +18,10 @@
                 components.Dispose();
             }
 
-            if (Output != null) Output.Dispose();
             if (pictureGiver != null) pictureGiver.Dispose();
-
+            if (Outputs != null)                
+                Outputs.Dispose();
+            
             base.Dispose(disposing);
         }
 
@@ -39,6 +40,12 @@
             this.saveFileToolStrip = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.parametersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.thresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.otsusThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.simpleThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sisThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iterativeThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.fpsLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
@@ -101,7 +108,8 @@
             // mainMenuStrip
             // 
             this.mainMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.parametersToolStripMenuItem});
             this.mainMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.mainMenuStrip.Name = "mainMenuStrip";
             this.mainMenuStrip.Size = new System.Drawing.Size(928, 24);
@@ -144,6 +152,55 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // parametersToolStripMenuItem
+            // 
+            this.parametersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.thresholdingToolStripMenuItem});
+            this.parametersToolStripMenuItem.Name = "parametersToolStripMenuItem";
+            this.parametersToolStripMenuItem.Size = new System.Drawing.Size(78, 20);
+            this.parametersToolStripMenuItem.Text = "Parameters";
+            // 
+            // thresholdingToolStripMenuItem
+            // 
+            this.thresholdingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.otsusThresholdingToolStripMenuItem,
+            this.simpleThresholdingToolStripMenuItem,
+            this.sisThresholdingToolStripMenuItem,
+            this.iterativeThresholdingToolStripMenuItem});
+            this.thresholdingToolStripMenuItem.Name = "thresholdingToolStripMenuItem";
+            this.thresholdingToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.thresholdingToolStripMenuItem.Text = "Thresholding";
+            // 
+            // otsusThresholdingToolStripMenuItem
+            // 
+            this.otsusThresholdingToolStripMenuItem.Checked = true;
+            this.otsusThresholdingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.otsusThresholdingToolStripMenuItem.Name = "otsusThresholdingToolStripMenuItem";
+            this.otsusThresholdingToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.otsusThresholdingToolStripMenuItem.Text = "Otsu\'s thresholding";
+            this.otsusThresholdingToolStripMenuItem.Click += new System.EventHandler(this.otsuThresholdingToolStripMenuItem_Click);
+            // 
+            // simpleThresholdingToolStripMenuItem
+            // 
+            this.simpleThresholdingToolStripMenuItem.Name = "simpleThresholdingToolStripMenuItem";
+            this.simpleThresholdingToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.simpleThresholdingToolStripMenuItem.Text = "Base thresholding";
+            this.simpleThresholdingToolStripMenuItem.Click += new System.EventHandler(this.classicThresholdingToolStripMenuItem_Click);
+            // 
+            // sisThresholdingToolStripMenuItem
+            // 
+            this.sisThresholdingToolStripMenuItem.Name = "sisThresholdingToolStripMenuItem";
+            this.sisThresholdingToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.sisThresholdingToolStripMenuItem.Text = "SIS thresholding";
+            this.sisThresholdingToolStripMenuItem.Click += new System.EventHandler(this.sisThresholdingToolStripMenuItem_Click);
+            // 
+            // iterativeThresholdingToolStripMenuItem
+            // 
+            this.iterativeThresholdingToolStripMenuItem.Name = "iterativeThresholdingToolStripMenuItem";
+            this.iterativeThresholdingToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.iterativeThresholdingToolStripMenuItem.Text = "Iterative thresholding";
+            this.iterativeThresholdingToolStripMenuItem.Click += new System.EventHandler(this.iterativeThresholdingToolStripMenuItem_Click);
             // 
             // statusStrip
             // 
@@ -755,6 +812,12 @@
         private System.Windows.Forms.Button MaskRemoval;
         private System.Windows.Forms.ComboBox DisplayControl;
         private System.Windows.Forms.NumericUpDown step;
+        private System.Windows.Forms.ToolStripMenuItem parametersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem thresholdingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem otsusThresholdingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem simpleThresholdingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sisThresholdingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iterativeThresholdingToolStripMenuItem;
     }
 }
 

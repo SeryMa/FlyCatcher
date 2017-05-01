@@ -107,6 +107,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppendableStream.cs" />
     <Compile Include="BlobKeeper.cs" />
     <Compile Include="BlobData.cs" />
     <Compile Include="BlobsFilter.cs" />

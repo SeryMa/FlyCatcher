@@ -31,6 +31,14 @@ namespace FlyCatcher
         public ICollection<IData<Blob, double, double, AForge.Point>> ItemsData { get { return itemsData; } }
 
         protected List<IData<Blob, double, double, AForge.Point>> itemsData;
+        protected IData<Blob, double, double, AForge.Point>[] validData
+        {
+            get
+            {
+                return (from dta in itemsData where dta.Valid select dta).ToArray();
+            }
+        }
+
         protected int historyCount;
 
         /// <summary>
@@ -64,27 +72,49 @@ namespace FlyCatcher
             itemsData = new List<IData<Blob, double, double, AForge.Point>>();
 
             foreach (var blob in items)
-                itemsData.Add(new BlobData(historyCount, blob, Tag));
+                itemsData.Add(new BlobData(historyCount, blob, $"{Tag}-{ItemsData.Count}"));
         }
 
         /// <summary>
         /// Function that should update the collection ItemsData with new data.
         /// </summary>
         /// <param name="items">The items that should perform the updating</param>
-        public abstract void ActualizeData(IEnumerable<Blob> items);// => ActualizeDataAssignmentTask(items.ToArray());       
+        public abstract void ActualizeData(IEnumerable<Blob> items);
 
+        #region Output
         public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
         {
             if (format.HasFlag(Constants.OutputFormat.Objects))
                 writer.Write($"{itemsData.Where(dta => dta.Valid).Count()}{Constants.Delimeter}");
 
             foreach (var blobData in itemsData)
-                blobData.PrintOut(writer, format);
+                if (blobData.Valid)
+                    blobData.PrintOut(writer, format);
+                else
+                {
+                    if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
+                        writer.Write($"{Constants.Blank}{Constants.Delimeter}");
+
+                    if (format.HasFlag(Constants.OutputFormat.AverageArea))
+                        writer.Write($"{Constants.Blank}{Constants.Delimeter}");
+
+                    if (format.HasFlag(Constants.OutputFormat.Position))
+                        writer.Write($"{Constants.Blank}{Constants.Delimeter}{Constants.Blank}{Constants.Delimeter}");
+
+                    if (format.HasFlag(Constants.OutputFormat.Prediction))
+                        writer.Write($"{Constants.Blank}{Constants.Delimeter}{Constants.Blank}{Constants.Delimeter}");
+
+                    if (format.HasFlag(Constants.OutputFormat.AverageSpeed))
+                        writer.Write($"{Constants.Blank}{Constants.Delimeter}");
+
+                    if (format.HasFlag(Constants.OutputFormat.ImmediateSpeed))
+                        writer.Write($"{Constants.Blank}{Constants.Delimeter}");
+                }
         }
         public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
         {
             if (format.HasFlag(Constants.OutputFormat.Objects))
-                writer.Write($"{Constants.Delimeter}");
+                writer.Write($"Object count{Constants.Delimeter}");
 
             foreach (var blobData in itemsData)
                 blobData.PrintOutHeader(writer, format);
@@ -102,9 +132,10 @@ namespace FlyCatcher
             foreach (var blobData in itemsData.Where(dta => dta.Valid))
                 blobData.Draw(gr, format);
         }
+        #endregion
     }
 
-    class BlobKeeperAssignment : BlobKeeper
+    class BlobKeeperValidOnlyAssignment : BlobKeeper
     {
         private SquareMatrix matrix;
 
@@ -112,13 +143,53 @@ namespace FlyCatcher
 
         public void ActualizeData(Blob[] items)
         {
+            var valids = validData;
+
+            var assignment = matrix.GetPerfectAssignment(valids, items, getMatch);
+
+            foreach (var properMatch in assignment[0])
+                valids[properMatch.Item1].AddItem(items[properMatch.Item2]);
+
+            foreach (var taskMatch in assignment[1])
+                itemsData.Add(new BlobData(historyCount, items[taskMatch.Item2], $"{Tag}-{ItemsData.Count}"));
+
+            foreach (var agentMatch in assignment[2])
+                valids[agentMatch.Item1].MakeInvalid();
+        }
+
+        public override void ActualizeData(IEnumerable<Blob> items) => ActualizeData(items.ToArray());
+
+        #region Ctors
+        public BlobKeeperValidOnlyAssignment(IEnumerable<Blob> items, string tag, int historyCount, double penalty) : base(items, tag, historyCount)
+        {
+            matrix = new SquareMatrix(penalty);
+        }
+
+        public BlobKeeperValidOnlyAssignment(string tag, int historyCount, double penalty) : base(tag, historyCount)
+        {
+            matrix = new SquareMatrix(penalty);
+        }
+        #endregion
+    }
+
+    class BlobKeeperValidReplaceAssignment : BlobKeeper
+    {
+        private SquareMatrix matrix;
+
+        private double getMatch(IData<Blob, double, double, AForge.Point> agent, Blob blob) => agent.GetMatch(blob) + (agent.Valid ? 0 : matrix.Penalty);
+
+        public void ActualizeData(Blob[] items)
+        {
             var assignment = matrix.GetPerfectAssignment(itemsData, items, getMatch);
 
             foreach (var properMatch in assignment[0])
-                itemsData[properMatch.Item1].AddItem(items[properMatch.Item2]);
+                if (itemsData[properMatch.Item1].Valid)                
+                    itemsData[properMatch.Item1].AddItem(items[properMatch.Item2]);
+                else
+                    itemsData.Add(new BlobData(historyCount, items[properMatch.Item2], $"{Tag}-{ItemsData.Count}"));
 
             foreach (var taskMatch in assignment[1])
-                itemsData.Add(new BlobData(historyCount, items[taskMatch.Item2], Tag));
+                itemsData.Add(new BlobData(historyCount, items[taskMatch.Item2], $"{Tag}-{ItemsData.Count}"));
 
             foreach (var agentMatch in assignment[2])
                 itemsData[agentMatch.Item1].MakeInvalid();
@@ -126,15 +197,17 @@ namespace FlyCatcher
 
         public override void ActualizeData(IEnumerable<Blob> items) => ActualizeData(items.ToArray());
 
-        public BlobKeeperAssignment(IEnumerable<Blob> items, string tag, int historyCount, double penalty) : base(items, tag, historyCount)
+        #region Ctors
+        public BlobKeeperValidReplaceAssignment(IEnumerable<Blob> items, string tag, int historyCount, double penalty) : base(items, tag, historyCount)
         {
             matrix = new SquareMatrix(penalty);
         }
 
-        public BlobKeeperAssignment(string tag, int historyCount, double penalty) : base(tag, historyCount)
+        public BlobKeeperValidReplaceAssignment(string tag, int historyCount, double penalty) : base(tag, historyCount)
         {
             matrix = new SquareMatrix(penalty);
         }
+        #endregion
     }
 
     class BlobKeeperClosestFirst : BlobKeeper

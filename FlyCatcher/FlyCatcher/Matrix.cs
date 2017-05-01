@@ -14,7 +14,7 @@ namespace FlyCatcher
         private Tag[][] tags;
         public int Dimension { get; private set; }
 
-        public double Penalty { private get; set; }
+        public double Penalty { get; set; }
 
         public int ValidTasks { get; private set; }
         public int ValidAgents { get; private set; }

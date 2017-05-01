@@ -8,8 +8,8 @@ using System.IO;
 using System.Threading.Tasks;
 
 using AForge.Video;
-
 using AForge.Imaging;
+using AForge.Imaging.Filters;
 
 
 namespace FlyCatcher
@@ -29,6 +29,12 @@ namespace FlyCatcher
         internal bool filterByArea { get { return filterStyleCheckBox.Checked; } }
         internal int upperBoundValue { get { return (int)blobUpperBound.Value; } }
         internal int lowerBoundValue { get { return (int)blobLowerBound.Value; } }
+
+        private static OtsuThreshold otsu = new OtsuThreshold();
+        private static Threshold classic = new Threshold();
+        private static SISThreshold sis = new SISThreshold();
+        private static IterativeThreshold iter = new IterativeThreshold();
+        internal BaseInPlacePartialFilter threshold = otsu;
 
         internal double redCoeficient { get { return (double)redCoeficientControl.Value; } }
         internal double greenCoeficient { get { return (double)greenCoeficientControl.Value; } }
@@ -62,20 +68,32 @@ namespace FlyCatcher
 
             DisplayControl.SelectedIndex = 0;
 
-            
+
             refreshActualFrame();
         }
 
         #region Init
-        
-        T getParameter<T>(string parameter, ILookup<string, string> parameters, T def, Extensions.Transform<T, string> transform)
-            => parameters != null && parameters.Contains(parameter) ? transform(parameters[parameter].First()) : def;
+
+        T getSingleParameter<T>(string parameter, ILookup<string, string> parameters, T def, Extensions.Transform<T, string> transform)
+        {
+            try
+            {
+                return parameters != null && parameters.Contains(parameter) ? transform(parameters[parameter].First()) : def;
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show($"Invalid value of '{parameters[parameter].First()}' for {parameter}", "Wrong parameter declaration", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return def;
+        }
 
         private ILookup<string, string> getParameters(string path) => (from line in File.ReadLines(path) where line.Contains("=") select line.Split('='))
                                                                       .ToLookup(parsedLine => parsedLine[0].Trim(), s => s[1].Trim());
 
         private void initPictureGiver(string path)
         {
+            //TODO: close video file.
             switch (Path.GetExtension(path))
             {
                 case ".jpg":
@@ -97,7 +115,6 @@ namespace FlyCatcher
             runAnalysisFrom.Maximum = actualIndex.Maximum = runAnalysisTo.Maximum = step.Maximum = pictureGiver.RunToMax;
 
             videoGroupBox.Text = $"Video - {pictureGiver.Tag}";
-            fpsLabel.Text = $"{pictureGiver.Tag}";
             Text = $"FlyCatcher - {pictureGiver.Tag}";
 
             enableFlowControl();
@@ -109,16 +126,20 @@ namespace FlyCatcher
 
         private void initParams(ILookup<string, string> parameters)
         {
-            historyCount = getParameter("history", parameters, 10, int.Parse);
-            penaltyValue = getParameter("penalty", parameters, 10, int.Parse);
+            historyCount = getSingleParameter("history", parameters, 10, int.Parse);
+            penaltyValue = getSingleParameter("penalty", parameters, 10, int.Parse);
 
-            blobUpperBound.Value = getParameter("max_size", parameters, 10, int.Parse);
-            blobLowerBound.Value = getParameter("min_size", parameters, 5, int.Parse);
+            blobUpperBound.Value = getSingleParameter("max_size", parameters, 10, int.Parse);
+            blobLowerBound.Value = getSingleParameter("min_size", parameters, 5, int.Parse);
 
-            maskHeight.Value = getParameter("height", parameters, 10, int.Parse);
-            maskWidth.Value = getParameter("width", parameters, 10, int.Parse);
+            maskHeight.Value = getSingleParameter("height", parameters, 10, int.Parse);
+            maskWidth.Value = getSingleParameter("width", parameters, 10, int.Parse);
 
-            invertCheckBox.Checked = getParameter("invert_colors", parameters, true, bool.Parse);
+            invertCheckBox.Checked = getSingleParameter("invert_colors", parameters, true, bool.Parse);
+
+            redCoeficientControl.Value = getSingleParameter("red_coef", parameters, 0.2125m, decimal.Parse);
+            greenCoeficientControl.Value = getSingleParameter("green_coef", parameters, 0.7154m, decimal.Parse);
+            blueCoeficientControl.Value = getSingleParameter("blue_coef", parameters, 0.0721m, decimal.Parse);
 
             initMasks(parameters);
             initOutputFormat(parameters);
@@ -129,60 +150,73 @@ namespace FlyCatcher
             outputFormat = Constants.OutputFormat.None;
 
             foreach (var tag in Constants.OutputTag)
-                outputFormat |= (getParameter(tag.Value, parameters, true, bool.Parse) ? tag.Key : Constants.OutputFormat.None);
+                outputFormat |= (getSingleParameter(tag.Value, parameters, true, bool.Parse) ? tag.Key : Constants.OutputFormat.None);
         }
         private void initHighlight(ILookup<string, string> parameters)
         {
             highlightFormat = Constants.HighlightFormat.None;
 
             foreach (var tag in Constants.HighlightTag)
-                highlightFormat |= (getParameter(tag.Value, parameters, false, bool.Parse) ? tag.Key : Constants.HighlightFormat.None);
+                highlightFormat |= (getSingleParameter(tag.Value, parameters, false, bool.Parse) ? tag.Key : Constants.HighlightFormat.None);
 
             //Special case which default value should be true, not false like with the others
-            highlightFormat |= (getParameter(Constants.HighlightTag[Constants.HighlightFormat.Object], parameters, true, bool.Parse) ? Constants.HighlightFormat.Object : Constants.HighlightFormat.None);
+            highlightFormat |= (getSingleParameter(Constants.HighlightTag[Constants.HighlightFormat.Object], parameters, true, bool.Parse) ? Constants.HighlightFormat.Object : Constants.HighlightFormat.None);
         }
         private void initMasks(ILookup<string, string> parameters)
         {
-            if (getParameter("clean", parameters, false, bool.Parse))
+            if (getSingleParameter("clean", parameters, false, bool.Parse))
             {
                 maskControlContainer.Items.Clear();
                 blobKeepers.Clear();
             }
 
             if (parameters != null)
-                foreach (var param in parameters)
+                try
                 {
-                    if (param.Key == "ellipse" || param.Key == "rectangle")
+                    foreach (var param in parameters)
                     {
-                        foreach (var mask in param)
+                        if (param.Key == "ellipse" || param.Key == "rectangle")
                         {
-                            var pars = mask.Split(' ');
-                            RectangleF rect = MathFunctions.getRectangle(float.Parse(pars[1]), float.Parse(pars[2]), float.Parse(pars[3]), float.Parse(pars[4]));
-                            //TODO: better parsing here...
-
-                            switch (param.Key)
+                            foreach (var mask in param)
                             {
-                                case "ellipse":
-                                    addMask(DrawStyle.Ellipse, rect, pars[0]);
-                                    break;
-                                case "rectangle":
-                                    addMask(DrawStyle.Rectangle, rect, pars[0]);
-                                    break;
-                                default:
-                                    break;
+                                var pars = mask.Split(' ');
+                                RectangleF rect = MathFunctions.getRectangle(float.Parse(pars[1]), float.Parse(pars[2]), float.Parse(pars[3]), float.Parse(pars[4]));
+                                //TODO: better parsing here...
+                                switch (param.Key)
+                                {
+                                    case "ellipse":
+                                        addMask(DrawStyle.Ellipse, rect, pars[0]);
+                                        break;
+                                    case "rectangle":
+                                        addMask(DrawStyle.Rectangle, rect, pars[0]);
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+
                             }
                         }
-                    }
 
+                    }
+                }
+                catch (NullReferenceException)
+                {
+                    MessageBox.Show("The media file must be loaded prior to loading masks.", "Missing media file", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
         }
 
         private void initOutput(string path)
         {
-            if (Output != null)
-                Output.Close();
+            if (Outputs != null) Outputs.Close();
 
-            Output = new MyStream(path);
+            Outputs = new AppendableStreams(path);
+
+            //TODO: get the folder properly
+            foreach (var keeper in blobKeepers)
+                Outputs.AddStream(keeper.Tag);
+
+            fpsLabel.Text = $"{path}";
         }
 
         private void InitParams(string path)
@@ -245,6 +279,41 @@ namespace FlyCatcher
 
         private void openFileClick(object sender, EventArgs e) => promptToOpenFile();
 
+        private void thresholdingCheck(ToolStripMenuItem currentItem)
+        {
+            if (currentItem != null)
+            {
+                ((ToolStripMenuItem)currentItem.OwnerItem).DropDownItems.OfType<ToolStripMenuItem>().ToList().ForEach(item => { item.Checked = false; });
+                currentItem.Checked = true;
+            }
+        }
+        private void setThreshold(BaseInPlacePartialFilter threshold)
+        {
+            this.threshold = threshold;
+            refreshActualFrame();
+        }
+
+        private void otsuThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            thresholdingCheck(sender as ToolStripMenuItem);
+            setThreshold(otsu);
+        }
+        private void classicThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            thresholdingCheck(sender as ToolStripMenuItem);
+            setThreshold(classic);
+        }
+        private void sisThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            thresholdingCheck(sender as ToolStripMenuItem);
+            setThreshold(sis);
+        }
+        private void iterativeThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            thresholdingCheck(sender as ToolStripMenuItem);
+            setThreshold(iter);
+        }
+
         private void saveCurrentConfiguration(object sender, EventArgs e)
         {
             SaveFileDialog dial = new SaveFileDialog();
@@ -293,7 +362,7 @@ namespace FlyCatcher
         #endregion
 
         #region Output
-        private MyStream Output;
+        private AppendableStreams Outputs;
 
         private Constants.OutputFormat outputFormat;
         private Constants.HighlightFormat highlightFormat;
@@ -314,39 +383,41 @@ namespace FlyCatcher
 
         void printOut(int frame)
         {
-            if (Output == null) return;
+            if (Outputs == null) return;
 
-            Output.Write($"{frame}{Constants.Delimeter}");
+            Outputs.Write($"{frame}{Constants.Delimeter}");
 
-            foreach (var blobKeeper in blobKeepers)
-                blobKeeper.PrintOut(Output, outputFormat);
+            foreach (var keeper in blobKeepers)
+                keeper.PrintOut(Outputs[keeper.Tag], outputFormat);
 
-            Output.WriteLine();
+            Outputs.WriteLine();
         }
 
         private void printOutHeader()
         {
-            if (Output == null) return;
+            if (Outputs == null) return;
 
-            Output.StartAppending();
 
-            Output.Write($"{Constants.Delimeter}");
+            Outputs.StartAppending();
+            Outputs.Write($"{Constants.Delimeter}");
+            
+            foreach (var keeper in blobKeepers)
+                keeper.PrintOutTag(Outputs[keeper.Tag], outputFormat);
 
-            foreach (var blobKeeper in blobKeepers)
-                blobKeeper.PrintOutTag(Output, outputFormat);
+            Outputs.WriteLine();
+            Outputs.Write($"{Constants.Delimeter}");
 
-            Output.WriteLine();
+            foreach (var keeper in blobKeepers)
+                keeper.PrintOutHeader(Outputs[keeper.Tag], outputFormat);
 
-            foreach (var blobKeeper in blobKeepers)
-                blobKeeper.PrintOutHeader(Output, outputFormat);
+            Outputs.WriteLine();
 
-            Output.WriteLine();
+            Outputs.Flush();
+            Outputs.StopAppending();
 
-            Output.Flush();
+            Outputs.Finish();
 
-            Output.StopAppending();
-            Output.Close();
-
+            Outputs.Close();            
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -356,15 +427,18 @@ namespace FlyCatcher
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (Output != null) Output.Close();
+            if (Outputs != null)
+                Outputs.Close();
+
+            //TODO: when Output is disposed Closing causes an error.
         }
         #endregion
 
         #region FlowControl
         void refreshActualFrame()
         {
-            if (pictureGiver != null)            
-                proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);            
+            if (pictureGiver != null)
+                proccesFrame(pictureGiver[actualPicture], Extensions.RefreshBlobKeeper);
             else
                 disableFlowControl();
         }
@@ -410,7 +484,7 @@ namespace FlyCatcher
 
             foreach (Control control in controlGroupBox.Controls)
                 control.Enabled = enabled;
-            
+
             setFlowControl(enabled);
 
             StopButton.Enabled = true;
@@ -420,8 +494,8 @@ namespace FlyCatcher
         private void Stop()
         {
             StartPauseButton.Text = "Start";
-            actualState = state.stoped;            
-            
+            actualState = state.stoped;
+
             printOutHeader();
 
             //TODO: think about the consequences
@@ -436,9 +510,9 @@ namespace FlyCatcher
             StartPauseButton.Text = "Start";
             actualState = state.paused;
 
-            if (Output == null) return;
+            if (Outputs == null) return;
 
-            Output.Flush();
+            Outputs.Flush();
         }
 
         private void Start()
@@ -489,6 +563,8 @@ namespace FlyCatcher
         {
             actualState = state.runing;
 
+            //TODO: move all file inicialiyation over here, especially Output...
+
             new Task(() =>
             {
                 foreach (Bitmap picture in pictureGiver)
@@ -503,10 +579,11 @@ namespace FlyCatcher
                     proccesFrame(picture, Extensions.ActualizeBlobKeeper);
 
                     printOut(pictureGiver.ActualIndex);
-                    videoSlider.crossThreadOperation(() => adjustSliders());
+
+                    videoSlider.crossThreadOperation(() => videoSlider.Value = (int)Math.Floor(MathFunctions.ValueToPercent(pictureGiver.RunFrom, pictureGiver.RunTo, actualPicture)));
                 }
 
-                this.crossThreadOperation(()=> Stop());
+                this.crossThreadOperation(() => Stop());
             }).Start();
         }
         #endregion
@@ -522,7 +599,7 @@ namespace FlyCatcher
             runAnalysisFrom.Enabled = !beginingBias.Checked;
             runAnalysisTo.Enabled = !endingBias.Checked;
         }
-        
+
         int actualPicture
         {
             get { return pictureGiver.ActualIndex; }
@@ -536,14 +613,14 @@ namespace FlyCatcher
         }
 
         private void videoSlider_Scroll(object sender, EventArgs e)
-            =>actualPicture = MathFunctions.PercentToValue(pictureGiver.RunFrom, pictureGiver.RunTo, videoSlider.Value);            
-        
+            => actualPicture = MathFunctions.PercentToValue(pictureGiver.RunFrom, pictureGiver.RunTo, videoSlider.Value);
 
-        private void pictureSelected(object sender, EventArgs e)=>actualPicture = (int)actualIndex.Value;                    
+
+        private void pictureSelected(object sender, EventArgs e) => actualPicture = (int)actualIndex.Value;
 
         private void beginingBias_CheckedChanged(object sender, EventArgs e)
         {
-            runAnalysisFrom.Enabled = !beginingBias.Checked;            
+            runAnalysisFrom.Enabled = !beginingBias.Checked;
             runAnalysisFrom.Value = runAnalysisFrom.Minimum;
 
             adjustSliders();
@@ -558,9 +635,9 @@ namespace FlyCatcher
         }
 
         private void runAnalysisFrom_ValueChanged(object sender, EventArgs e)
-        {            
+        {
             pictureGiver.RunFrom = (int)runAnalysisFrom.Value;
-            actualPicture = Math.Max(pictureGiver.RunFrom, actualPicture);            
+            actualPicture = Math.Max(pictureGiver.RunFrom, actualPicture);
         }
 
         private void runAnalysisTo_ValueChanged(object sender, EventArgs e)
@@ -593,7 +670,7 @@ namespace FlyCatcher
 
         private void step_ValueChanged(object sender, EventArgs e)
         {
-            pictureGiver.Step = (int)step.Value; 
+            pictureGiver.Step = (int)step.Value;
             actualIndex.Increment = step.Value;
         }
 
@@ -644,6 +721,12 @@ namespace FlyCatcher
             }
 
             maskControlContainer.Items.Add(mask);
+
+            if (!blobKeepers.Any(keeper => keeper.Tag == maskTag))
+            {
+                blobKeepers.Add(new BlobKeeperValidOnlyAssignment(maskTag, historyCount, penaltyValue));
+                if (Outputs != null) Outputs.AddStream(maskTag);
+            }
         }
 
         private void maskingEventHandler(drawEvent ev)
@@ -711,9 +794,6 @@ namespace FlyCatcher
             {
                 addMask(actualStyle, MathFunctions.getPercentRectangle(drawRectangle, VideoBox.Size), maskTag);
 
-                if (!blobKeepers.Any(keeper => keeper.Tag == maskTag))
-                    blobKeepers.Add(new BlobKeeperAssignment(maskTag, historyCount, penaltyValue));
-
                 refreshActualFrame();
             });
 
@@ -756,6 +836,5 @@ namespace FlyCatcher
         private void displayMask(object sender, EventArgs e) => Refresh();
 
         #endregion
-
     }
 }
