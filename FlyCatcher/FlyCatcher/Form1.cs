@@ -498,6 +498,10 @@ namespace FlyCatcher
 
             printOutHeader();
 
+            //TODO: check funcionality, adjust fps label
+            Outputs.Dispose();
+            Outputs = null;
+
             //TODO: think about the consequences
             pictureGiver.Restart();
             adjustSliders();

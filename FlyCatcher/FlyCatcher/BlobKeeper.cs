@@ -172,7 +172,7 @@ namespace FlyCatcher
         #endregion
     }
 
-    class BlobKeeperValidReplaceAssignment : BlobKeeper
+    class BlobKeeperInvalidReplaceAssignment : BlobKeeper
     {
         private SquareMatrix matrix;
 
@@ -198,12 +198,12 @@ namespace FlyCatcher
         public override void ActualizeData(IEnumerable<Blob> items) => ActualizeData(items.ToArray());
 
         #region Ctors
-        public BlobKeeperValidReplaceAssignment(IEnumerable<Blob> items, string tag, int historyCount, double penalty) : base(items, tag, historyCount)
+        public BlobKeeperInvalidReplaceAssignment(IEnumerable<Blob> items, string tag, int historyCount, double penalty) : base(items, tag, historyCount)
         {
             matrix = new SquareMatrix(penalty);
         }
 
-        public BlobKeeperValidReplaceAssignment(string tag, int historyCount, double penalty) : base(tag, historyCount)
+        public BlobKeeperInvalidReplaceAssignment(string tag, int historyCount, double penalty) : base(tag, historyCount)
         {
             matrix = new SquareMatrix(penalty);
         }
