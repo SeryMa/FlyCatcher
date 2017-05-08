@@ -263,24 +263,29 @@ All files(*.*) | *.*";
         
 
         [Flags]
-        public enum OutputFormat { None = 0, Objects = 1, AverageSpeed = 2, ImmediateSpeed = 4, Position = 8, Prediction = 16, ImmadiateArea = 32, AverageArea = 64 }
+        public enum OutputFormat { None = 0, Objects = 1, AverageSpeed = 2, ImmediateSpeed = 4, Position = 8, Prediction = 16, ImmadiateArea = 32, AverageArea = 64, GlobalSpeed = 128, GlobalArea = 256, GlobalAvgSpeed = 512, GlobalAvgArea = 1024 }
         public static Dictionary<OutputFormat, string> OutputTag = new Dictionary<OutputFormat, string>()
         {
-            { OutputFormat.None, "" },
+            //{ OutputFormat.None, "" },
             { OutputFormat.Objects, "objects" },
             { OutputFormat.AverageSpeed, "avg_speed" },
             { OutputFormat.ImmediateSpeed, "imm_speed" },
             { OutputFormat.Position, "positinon" },
             { OutputFormat.Prediction, "prediction" },
             { OutputFormat.ImmadiateArea, "imm_area" },
-            { OutputFormat.AverageArea, "avg_area" }
+            { OutputFormat.AverageArea, "avg_area" },
+
+            { OutputFormat.GlobalArea, "glb_area" },
+            { OutputFormat.GlobalSpeed, "glb_speed" },
+            { OutputFormat.GlobalAvgArea, "glb_avg_area" },
+            { OutputFormat.GlobalAvgSpeed, "glb_avg_speed" },
         };
 
         [Flags]
         public enum HighlightFormat { None = 0, Object = 1, Prediction = 2, Trace = 4, Tag = 8, Direction = 16 }
         public static Dictionary<HighlightFormat, string> HighlightTag = new Dictionary<HighlightFormat, string>()
         {
-            {HighlightFormat.None, "" },
+            //{HighlightFormat.None, "" },
             {HighlightFormat.Object, "mark_object" },
             {HighlightFormat.Prediction, "mark_prediction" },
             {HighlightFormat.Trace, "mark_trace" },

@@ -20,6 +20,42 @@ namespace FlyCatcher
         public int ValidAgents { get; private set; }
 
         private static Point nullPoint = new Point(-1, -1);
+ 
+        #region Debug
+        private void print()
+        {
+            for (int row = 0; row < Dimension; row++)
+            {
+                for (int column = 0; column < Dimension; column++)
+                    switch (tags[row][column])
+                    {
+                        case Tag.Free:
+                            Console.Write(". ");
+                            break;
+                        case Tag.Circled:
+                            Console.Write("O ");
+                            break;
+                        case Tag.Taged:
+                            Console.Write("* ");
+                            break;
+                        case Tag.Vertical:
+                            Console.Write("| ");
+                            break;
+                        case Tag.Horizontal:
+                            Console.Write("- ");
+                            break;
+                        case Tag.DoubleAssigned:
+                            Console.Write("# ");
+                            break;
+                        default:
+                            break;
+                    }
+
+                Console.WriteLine();
+            }
+        }
+        private void printOut()
+        { Console.WriteLine(ToString());}
 
         public override string ToString()
         {
@@ -35,6 +71,9 @@ namespace FlyCatcher
                             break;
                         case Tag.Circled:
                             str.AppendFormat("\t({0,6})", Math.Round(matrix[row][column], 3));
+                            break;
+                        case Tag.Taged:
+                            str.AppendFormat("\t {0,6}'", Math.Round(matrix[row][column], 3));
                             break;
                         case Tag.Vertical:
                             str.AppendFormat("\t|{0,6}|", Math.Round(matrix[row][column], 3));
@@ -52,12 +91,21 @@ namespace FlyCatcher
             str.AppendLine();
             return str.ToString();
         }
+        #endregion
 
+        #region Init       
         private void initTags()
         {
             tags = new Tag[Dimension][];
             for (int i = 0; i < Dimension; i++)
                 tags[i] = new Tag[Dimension];
+        }
+        private void removeTags()
+        {
+            for (int row = 0; row < Dimension; row++)
+                for (int column = 0; column < Dimension; column++)
+                    if (tags[row][column] != Tag.Circled)
+                        tags[row][column]  = Tag.Free;
         }
         private void initMatrix()
         {
@@ -92,7 +140,6 @@ namespace FlyCatcher
                 row++;
             }
         }
-
         public void initMatrix(double[][] distances)
         {
             //if (Agents.Count() > Dimension || Tasks.Count() > Dimension)
@@ -111,7 +158,9 @@ namespace FlyCatcher
                     matrix[row][column] = distances[row][column];
 
         }
+        #endregion
 
+        #region Ctors        
         public SquareMatrix(double penalty)
         {
             Penalty = penalty;
@@ -138,7 +187,9 @@ namespace FlyCatcher
                 for (int column = 0; column < Dimension; column++)
                     this.matrix[row][column] = matrix[row, column];
         }
+        #endregion
 
+        #region Preparation
         private double MinRow(int row) => matrix.GetRow(row).Min();
         private void MinimizeRow(int rowIndex) => MinimizeRowBy(rowIndex, MinRow(rowIndex));
         private void MinimizeRowBy(int rowIndex, double by) => matrix.iterateOverRow(rowIndex, val => val - by);
@@ -158,6 +209,7 @@ namespace FlyCatcher
             }
 
         }
+        #endregion
 
         private delegate bool Predicate(int row, int column);
         private int predictateCounterInRow(int row, Predicate pred)
@@ -179,7 +231,7 @@ namespace FlyCatcher
             return counter;
         }
 
-        private enum Tag { Free, Circled, Vertical, Horizontal, DoubleAssigned }
+        private enum Tag { Free, Circled, Taged, Vertical, Horizontal, DoubleAssigned }
         private bool isUnassignedZero(int row, int column) => (matrix[row][column].isZero() &&
                                                                tags[row][column] == Tag.Free);
 
@@ -223,6 +275,7 @@ namespace FlyCatcher
                         tags[row][column] = Tag.DoubleAssigned;
                         break;
                     case Tag.Circled:
+                    case Tag.Taged:
                         //Nothing happens to already circled zeros
                         break;
                     case Tag.DoubleAssigned:
@@ -244,6 +297,7 @@ namespace FlyCatcher
                         tags[i][column] = Tag.DoubleAssigned;
                         break;
                     case Tag.Circled:
+                    case Tag.Taged:
                         //Nothing happens to already circled zeros
                         break;
                     case Tag.DoubleAssigned:
@@ -254,164 +308,242 @@ namespace FlyCatcher
                 }
         }
 
-        private bool CircleAssignedZeros()
+        private void unAssignRow(int row)
         {
-            bool circledAny = false;
-
+            for (int column = 0; column < Dimension; column++)
+                switch (tags[row][column])
+                {
+                    case Tag.Horizontal:
+                        tags[row][column] = Tag.Free;
+                        break;
+                    case Tag.DoubleAssigned:
+                        tags[row][column] = Tag.Vertical;
+                        break;
+                    case Tag.Circled:
+                    case Tag.Taged:
+                        //Nothing happens to already circled zeros
+                        break;
+                    case Tag.Vertical:
+                    case Tag.Free:
+                    default:
+                        //Other options should not happen
+                        throw new Exception("This row is not assigned.");
+                }
+        }
+        private void unAssignColumn(int column)
+        {
             for (int row = 0; row < Dimension; row++)
-                for (int column = 0; column < Dimension; column++)
-                    if (isCircleableZero(row, column))
-                        if (circleableZerosInRow(row) == 1 || circleableZerosInColumn(column) == 1)
-                        {
-                            tags[row][column] = Tag.Circled;
-                            circledAny = true;
-                        }
+                switch (tags[row][column])
+                {
+                    case Tag.Vertical:
+                        tags[row][column] = Tag.Free;
+                        break;
+                    case Tag.DoubleAssigned:
+                        tags[row][column] = Tag.Horizontal;
+                        break;
+                    case Tag.Circled:
+                    case Tag.Taged:
+                        //Nothing happens to already circled zeros
+                        break;
 
-            for (int row = 0; row < Dimension; row++)
-                for (int column = 0; column < Dimension; column++)
-                    if (isCircleableZero(row, column))
-                    {
-                        tags[row][column] = Tag.Circled;
-                        return true;
-                    }
-
-            return circledAny;
+                    case Tag.Horizontal:
+                    case Tag.Free:
+                    default:
+                        //Other options should not happen
+                        throw new Exception("This row is not assigned.");
+                }
         }
 
-        private void Assign()
-        {
-            //Position of zero in the matrix
-            Point zeroPosition;
-
-            while (unassignedZero(out zeroPosition))
-                if (freeZerosInRow(zeroPosition.X) >= freeZerosInColumn(zeroPosition.Y))
-                    assignRow(zeroPosition.X);
-                else
-                    assignColumn(zeroPosition.Y);
-
-            //Console.WriteLine(ToString());
-            while (CircleAssignedZeros());            
-        }
-
-        //private bool isFreeZero(int row, int column) => matrix[row][column].isZero() &&
-        //                                                !tags.GetColumn(column).Any(tag => tag == Tag.Circled);
-        //private int countFreeZeros(int row, out Point pt)
+        //private bool CircleAssignedZeros()
         //{
-        //    pt = nullPoint;
-        //    int counter = 0;
-
-        //    for (int column = 0; column < Dimension; column++)
-        //        if (isFreeZero(row, column))
-        //        {
-        //            pt = new Point(row, column);
-        //            counter++;
-        //        }
-
-        //    return counter;
-        //}
-
-        //private int countZeros(int column)
-        //{
-        //    int counter = 0;
+        //    bool circledAny = false;
 
         //    for (int row = 0; row < Dimension; row++)
-        //        if (matrix[row][column].isZero())
-        //            counter++;
+        //        for (int column = 0; column < Dimension; column++)
+        //            if (isCircleableZero(row, column))
+        //                if (circleableZerosInRow(row) == 1 || circleableZerosInColumn(column) == 1)
+        //                {
+        //                    tags[row][column] = Tag.Circled;
+        //                    circledAny = true;
+        //                }
 
-        //    return counter;
-        //}
+        //    for (int row = 0; row < Dimension; row++)
+        //        for (int column = 0; column < Dimension; column++)
+        //            if (isCircleableZero(row, column))
+        //            {
+        //                tags[row][column] = Tag.Circled;
+        //                return true;
+        //            }
 
-        //private List<int> supp(List<int> lst)
-        //{
-        //    List<int> ret = new List<int>();
-
-        //    lst.Sort();
-        //    int i = 0;
-
-        //    foreach (int item in lst)
-        //    {
-        //        while (item != i && i < Dimension)
-        //        {
-        //            ret.Add(i);
-        //            i++;
-        //        }
-
-        //        i++;
-        //    }
-
-        //    while (i < Dimension)
-        //    {
-        //        ret.Add(i);
-        //        i++;
-        //    }
-
-        //    return ret;
+        //    return circledAny;
         //}
 
         //private void Assign()
         //{
-        //    Point zero;
-        //    List<int> rowMarks = new List<int>();
+        //    //Position of zero in the matrix
+        //    Point zeroPosition;
+
+        //    while (unassignedZero(out zeroPosition))
+        //        if (freeZerosInRow(zeroPosition.X) >= freeZerosInColumn(zeroPosition.Y))
+        //            assignRow(zeroPosition.X);
+        //        else
+        //            assignColumn(zeroPosition.Y);
+
+        //    //TODO: fix this method - see problem.csv
+        //    while (CircleAssignedZeros());            
+        //}
+
+        //private bool CircleAssignedZeros()
+        //{
+        //    bool circledAny = false;
 
         //    for (int row = 0; row < Dimension; row++)
-        //        switch (countFreeZeros(row, out zero))
+        //        for (int column = 0; column < Dimension; column++)
+        //            if (isCircleableZero(row, column))
+        //                if (circleableZerosInRow(row) == 1 || circleableZerosInColumn(column) == 1)
+        //                {
+        //                    tags[row][column] = Tag.Circled;
+        //                    circledAny = true;
+        //                }
+
+        //    for (int row = 0; row < Dimension; row++)
+        //        for (int column = 0; column < Dimension; column++)
+        //            if (isCircleableZero(row, column))
+        //            {
+        //                tags[row][column] = Tag.Circled;
+        //                return true;
+        //            }
+
+        //    return circledAny;
+        //}
+
+        //private void Assign()
+        //{
+        //    SortedSet<int> markRows = new SortedSet<int>();
+        //    SortedSet<int> markColumns = new SortedSet<int>();
+
+        //    //SortedSet<int> assignedRows = new SortedSet<int>();
+        //    //SortedSet<int> assignedColumns = new SortedSet<int>();
+
+
+        //    for (int row = 0; row < Dimension; row++)
+        //        if (freeZerosInRow(row) == 0)
+        //            markRows.Add(row);
+        //        else
         //        {
-        //            case 0:
-        //                rowMarks.Add(row);
-        //                break;
-        //            case 1:
-        //            default:
-        //                tags[zero.X][zero.Y] = Tag.Circled;
-        //                break;
+        //            for (int column = 0; column < Dimension; column++)
+        //                if (isUnassignedZero(row, column))
+        //                { assignColumn(column); break; }
+
+        //            assignRow(row);
         //        }
 
-        //    List<int> columnMarks = new List<int>();
 
-        //    foreach (var row in rowMarks)
+        //    for (int column = 0; column < Dimension; column++)
+        //        if (!markColumns.Contains(column))
+        //            foreach (var row in markRows)
+        //                if (matrix[row][column].isZero())
+        //                    markColumns.Add(column);
+
+        //    for (int row = 0; row < Dimension; row++)
+        //        if (!markRows.Contains(row))
+        //            foreach (var column in markColumns)
+        //                if (matrix[row][column].isZero() && tags[row][column] != Tag.Free)
+        //                    markRows.Add(row);
+
+        //    initTags();
+
+        //    for (int row = 0; row < Dimension; row++)
+        //        if (!markRows.Contains(row))
+        //            assignRow(row);
+
+        //    foreach (var column in markColumns)
+        //        assignColumn(column);
+
+        //    while (CircleAssignedZeros()) ;
+        //}
+        //private void Augment()
+        //{
+        //    double min = double.PositiveInfinity;
+
+        //    for (int row = 0; row < Dimension; row++)
         //        for (int column = 0; column < Dimension; column++)
-        //            if (matrix[row][column].isZero())
-        //            {
-        //                columnMarks.Add(column);
-        //                break;
-        //            }
+        //            if (tags[row][column] == Tag.Free && matrix[row][column] < min)
+        //                min = matrix[row][column];
 
-        //    foreach (var column in columnMarks)
-        //        for (int row = 0; row < Dimension; row++)
-        //            if (tags[row][column] == Tag.Circled && !rowMarks.Contains(row))
+        //    for (int row = 0; row < Dimension; row++)
+        //        for (int column = 0; column < Dimension; column++)
+        //            switch (tags[row][column])
         //            {
-        //                rowMarks.Add(row);
-        //                break;
+        //                case Tag.Free:
+        //                    matrix[row][column] -= min;
+        //                    break;
+        //                case Tag.DoubleAssigned:
+        //                    matrix[row][column] += min;
+        //                    break;
+        //                default:
+        //                    break;
         //            }
-
-        //    foreach (var column in columnMarks)
-        //    {       Console.WriteLine($"Column mark: {column}");
-        //    assignColumn(column);
         //}
 
-        //    foreach (var row in rowMarks)
-        //        Console.WriteLine($"Row mark: {row}");
-
-        //    foreach (var row in supp(rowMarks))
-        //    {
-        //        Console.WriteLine($"Row un-mark: {row}");
-        //        assignRow(row);
-        //    }
-        //}
-
-        private List<Tuple<int, int>> GetAssignment()
+        private void CircleZero(int row, int column)
         {
-            Assign();
+            assignColumn(column);
+            tags[row][column] = Tag.Circled;            
+        }
 
-            //Console.WriteLine(ToString());
-
-            List<Tuple<int, int>> assignment = new List<Tuple<int, int>>(Dimension);
+        private bool FindCircledInColumn(int column, out Point circeldZero)
+        {
+            circeldZero = nullPoint;
 
             for (int row = 0; row < Dimension; row++)
-                for (int column = 0; column < Dimension; column++)
-                    if (tags[row][column] == Tag.Circled)
-                        assignment.Add(new Tuple<int, int>(row, column));
+                if (tags[row][column] == Tag.Circled)
+                {
+                    circeldZero = new Point(row, column);
+                    return true;
+                }
 
-            return assignment;
+            return false;
+        }
+
+        private Point FindTagedInRow(int row)
+        {
+            for (int column = 0; column < Dimension; column++)
+                if (tags[row][column] == Tag.Taged)                
+                    return new Point(row, column);
+
+            return nullPoint;
+        }
+
+        private void CircleNew(Point zero)
+        {
+            Stack<Point> zeros = new Stack<Point>(Dimension);
+            zeros.Push(zero);
+
+            while (FindCircledInColumn(zeros.Peek().Y, out zero))
+            {
+                zeros.Push(zero);
+                zeros.Push(FindTagedInRow(zero.X));
+            }
+            
+            removeTags();
+
+            zero = zeros.Pop();
+            CircleZero(zero.X, zero.Y);
+            
+            while (zeros.Count > 0)
+            {                
+                zero = zeros.Pop();
+                tags[zero.X][zero.Y] = Tag.Free;
+
+                zero = zeros.Pop();
+                CircleZero(zero.X, zero.Y);
+            }
+
+            for (int column = 0; column < Dimension; column++)
+                for (int row = 0; row < Dimension; row++)
+                    if (tags[row][column] == Tag.Circled && !columnAssigned(column))
+                    { assignColumn(column); break; }
         }
 
         private void Augment()
@@ -438,6 +570,41 @@ namespace FlyCatcher
                     }
         }
 
+        private bool Assign(out Point zero)
+        {
+            while (true)
+            {
+                while (unassignedZero(out zero))
+                {
+                    tags[zero.X][zero.Y] = Tag.Taged;
+
+                    for (int column = 0; column < Dimension; column++)
+                        if (tags[zero.X][column] == Tag.Circled)
+                        {
+                            unAssignColumn(column);
+                            assignRow(zero.X);
+                            return true;
+                        }
+
+                    return false;
+                }
+
+                Augment();
+            }            
+        }
+
+        private List<Tuple<int, int>> GetActualAssignment()
+        {
+            List<Tuple<int, int>> assignment = new List<Tuple<int, int>>(Dimension);
+
+            for (int row = 0; row < Dimension; row++)
+                for (int column = 0; column < Dimension; column++)
+                    if (tags[row][column] == Tag.Circled)
+                        assignment.Add(new Tuple<int, int>(row, column));
+
+            return assignment;
+        }
+
         /// <summary>
         /// Solves the assignment task for inited matrix.
         /// </summary>
@@ -450,14 +617,22 @@ namespace FlyCatcher
         {
             Minimize();
 
-            List<Tuple<int, int>> assignment = GetAssignment();
+            for (int row = 0; row < Dimension; row++)
+                for (int column = 0; column < Dimension; column++)
+                    if (isCircleableZero(row, column))
+                        CircleZero(row, column);
+
+            List<Tuple<int, int>> assignment = GetActualAssignment();
+            Point zero;
 
             while (assignment.Count != Dimension)
             {
-                Augment();
-                initTags();
-
-                assignment = GetAssignment();
+                while (Assign(out zero)) ;           
+                    
+                
+                CircleNew(zero);
+                
+                assignment = GetActualAssignment();
             }
 
             return FilterOutput(assignment);

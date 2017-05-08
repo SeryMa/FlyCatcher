@@ -46,6 +46,7 @@
             this.simpleThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sisThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iterativeThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bradleyThresholdingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.fpsLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
@@ -83,6 +84,10 @@
             this.blobLowerBound = new System.Windows.Forms.NumericUpDown();
             this.invertCheckBox = new System.Windows.Forms.CheckBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.progressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.percentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.absoluteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.mainPanel.SuspendLayout();
@@ -109,7 +114,8 @@
             // 
             this.mainMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.parametersToolStripMenuItem});
+            this.parametersToolStripMenuItem,
+            this.viewToolStripMenuItem});
             this.mainMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.mainMenuStrip.Name = "mainMenuStrip";
             this.mainMenuStrip.Size = new System.Drawing.Size(928, 24);
@@ -167,15 +173,14 @@
             this.otsusThresholdingToolStripMenuItem,
             this.simpleThresholdingToolStripMenuItem,
             this.sisThresholdingToolStripMenuItem,
-            this.iterativeThresholdingToolStripMenuItem});
+            this.iterativeThresholdingToolStripMenuItem,
+            this.bradleyThresholdingToolStripMenuItem});
             this.thresholdingToolStripMenuItem.Name = "thresholdingToolStripMenuItem";
             this.thresholdingToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
             this.thresholdingToolStripMenuItem.Text = "Thresholding";
             // 
             // otsusThresholdingToolStripMenuItem
             // 
-            this.otsusThresholdingToolStripMenuItem.Checked = true;
-            this.otsusThresholdingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.otsusThresholdingToolStripMenuItem.Name = "otsusThresholdingToolStripMenuItem";
             this.otsusThresholdingToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
             this.otsusThresholdingToolStripMenuItem.Text = "Otsu\'s thresholding";
@@ -201,6 +206,15 @@
             this.iterativeThresholdingToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
             this.iterativeThresholdingToolStripMenuItem.Text = "Iterative thresholding";
             this.iterativeThresholdingToolStripMenuItem.Click += new System.EventHandler(this.iterativeThresholdingToolStripMenuItem_Click);
+            // 
+            // bradleyThresholdingToolStripMenuItem
+            // 
+            this.bradleyThresholdingToolStripMenuItem.Checked = true;
+            this.bradleyThresholdingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.bradleyThresholdingToolStripMenuItem.Name = "bradleyThresholdingToolStripMenuItem";
+            this.bradleyThresholdingToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.bradleyThresholdingToolStripMenuItem.Text = "Bradley thresholding";
+            this.bradleyThresholdingToolStripMenuItem.Click += new System.EventHandler(this.bradleyThresholdingToolStripMenuItem_Click);
             // 
             // statusStrip
             // 
@@ -307,7 +321,7 @@
             // step
             // 
             this.step.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.step.Location = new System.Drawing.Point(158, 420);
+            this.step.Location = new System.Drawing.Point(178, 420);
             this.step.Maximum = new decimal(new int[] {
             100000000,
             0,
@@ -319,7 +333,7 @@
             0,
             0});
             this.step.Name = "step";
-            this.step.Size = new System.Drawing.Size(40, 20);
+            this.step.Size = new System.Drawing.Size(60, 20);
             this.step.TabIndex = 15;
             this.step.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.step.ThousandsSeparator = true;
@@ -347,7 +361,7 @@
             this.endingBias.AutoSize = true;
             this.endingBias.Checked = true;
             this.endingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.endingBias.Location = new System.Drawing.Point(414, 421);
+            this.endingBias.Location = new System.Drawing.Point(494, 421);
             this.endingBias.Name = "endingBias";
             this.endingBias.Size = new System.Drawing.Size(79, 17);
             this.endingBias.TabIndex = 13;
@@ -361,7 +375,7 @@
             this.beginingBias.AutoSize = true;
             this.beginingBias.Checked = true;
             this.beginingBias.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.beginingBias.Location = new System.Drawing.Point(250, 421);
+            this.beginingBias.Location = new System.Drawing.Point(310, 421);
             this.beginingBias.Name = "beginingBias";
             this.beginingBias.Size = new System.Drawing.Size(112, 17);
             this.beginingBias.TabIndex = 12;
@@ -373,14 +387,14 @@
             // 
             this.runAnalysisTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisTo.Enabled = false;
-            this.runAnalysisTo.Location = new System.Drawing.Point(368, 420);
+            this.runAnalysisTo.Location = new System.Drawing.Point(428, 420);
             this.runAnalysisTo.Maximum = new decimal(new int[] {
             100000000,
             0,
             0,
             0});
             this.runAnalysisTo.Name = "runAnalysisTo";
-            this.runAnalysisTo.Size = new System.Drawing.Size(40, 20);
+            this.runAnalysisTo.Size = new System.Drawing.Size(60, 20);
             this.runAnalysisTo.TabIndex = 11;
             this.runAnalysisTo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.runAnalysisTo.ThousandsSeparator = true;
@@ -390,14 +404,14 @@
             // 
             this.runAnalysisFrom.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.runAnalysisFrom.Enabled = false;
-            this.runAnalysisFrom.Location = new System.Drawing.Point(204, 420);
+            this.runAnalysisFrom.Location = new System.Drawing.Point(244, 420);
             this.runAnalysisFrom.Maximum = new decimal(new int[] {
             100000000,
             0,
             0,
             0});
             this.runAnalysisFrom.Name = "runAnalysisFrom";
-            this.runAnalysisFrom.Size = new System.Drawing.Size(40, 20);
+            this.runAnalysisFrom.Size = new System.Drawing.Size(60, 20);
             this.runAnalysisFrom.TabIndex = 10;
             this.runAnalysisFrom.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.runAnalysisFrom.ThousandsSeparator = true;
@@ -413,7 +427,7 @@
             0,
             0});
             this.actualIndex.Name = "actualIndex";
-            this.actualIndex.Size = new System.Drawing.Size(40, 20);
+            this.actualIndex.Size = new System.Drawing.Size(60, 20);
             this.actualIndex.TabIndex = 9;
             this.actualIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.actualIndex.ThousandsSeparator = true;
@@ -721,6 +735,39 @@
             this.openFileDialog.Filter = "AVI files (*.avi)|*.avi|All files (*.*)|*.*";
             this.openFileDialog.Title = "Opem movie";
             // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.progressToolStripMenuItem});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "View";
+            // 
+            // progressToolStripMenuItem
+            // 
+            this.progressToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.percentToolStripMenuItem,
+            this.absoluteToolStripMenuItem});
+            this.progressToolStripMenuItem.Name = "progressToolStripMenuItem";
+            this.progressToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.progressToolStripMenuItem.Text = "Progress";
+            // 
+            // percentToolStripMenuItem
+            // 
+            this.percentToolStripMenuItem.Checked = true;
+            this.percentToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.percentToolStripMenuItem.Name = "percentToolStripMenuItem";
+            this.percentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.percentToolStripMenuItem.Text = "Percent";
+            this.percentToolStripMenuItem.Click += new System.EventHandler(this.progressToolStrip_Click);
+            // 
+            // absoluteToolStripMenuItem
+            // 
+            this.absoluteToolStripMenuItem.Name = "absoluteToolStripMenuItem";
+            this.absoluteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.absoluteToolStripMenuItem.Text = "Absolute";
+            this.absoluteToolStripMenuItem.Click += new System.EventHandler(this.progressToolStrip_Click);
+            // 
             // MainForm
             // 
             this.AllowDrop = true;
@@ -818,6 +865,11 @@
         private System.Windows.Forms.ToolStripMenuItem simpleThresholdingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sisThresholdingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem iterativeThresholdingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem bradleyThresholdingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem progressToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem percentToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem absoluteToolStripMenuItem;
     }
 }
 

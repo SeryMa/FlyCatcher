@@ -298,7 +298,7 @@ namespace FlyCatcher
                 reader.Position = frameCounter;
                 yield return reader.GetNextFrame();
 
-                for (int i = Step; i > 1; i--)
+                for (int i = Step; i >= 1; i--)
                     frameCounter++;
 
             } while (frameCounter < RunTo);

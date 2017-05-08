@@ -14,6 +14,9 @@ namespace FlyCatcher
         DistanceType averageSpeed { get; }
         DistanceType averageArea { get; }
 
+        DistanceType immediateSpeed { get; }
+        DistanceType immediateArea { get; }
+
         PositionType Direction { get; }
         PositionType PredictNext { get; }
 
@@ -21,8 +24,10 @@ namespace FlyCatcher
 
         string Tag { get; }
 
+        int ValidValue { get; }
         bool Valid { get; }
         void MakeInvalid();
+        void Revalidate();
 
         MeasureType GetMatch(T item);
         MeasureType AddItem(T item);
@@ -33,75 +38,81 @@ namespace FlyCatcher
         void Draw(Graphics gr, Constants.HighlightFormat format);
     }
 
-    class MergeData : IData<Blob, double, double, AForge.Point>
-    {
-        public double averageArea { get { return merges.Average(x => x.averageArea); } }
+    //class MergeData : IData<Blob, double, double, AForge.Point>
+    //{
+    //    public double averageArea { get { return merges.Average(x => x.averageArea); } }
 
-        public double averageSpeed { get { return merges.Average(x => x.averageSpeed); } }
+    //    public double averageSpeed { get { return merges.Average(x => x.averageSpeed); } }
 
 
-        public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
-        {
-            foreach (var blobData in merges)
-                blobData.PrintOut(writer, format);
-        }
+    //    public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
+    //    {
+    //        foreach (var blobData in merges)
+    //            blobData.PrintOut(writer, format);
+    //    }
 
-        /// <summary>
-        /// MergeData doesn't support Items.
-        /// </summary>
-        public ICollection<Blob> Items { get { throw new NotImplementedException(); } }
+    //    /// <summary>
+    //    /// MergeData doesn't support Items.
+    //    /// </summary>
+    //    public ICollection<Blob> Items { get { throw new NotImplementedException(); } }
 
-        public string Tag { get { return (from x in merges select x.Tag).Aggregate((str1, str2) => str1 + str2); } }
+    //    public string Tag { get { return (from x in merges select x.Tag).Aggregate((str1, str2) => str1 + str2); } }
 
-        public AForge.Point Direction { get { return (from x in merges select x.Direction).Aggregate((A, B) => MathFunctions.Mean(A, B)); } }
+    //    public AForge.Point Direction { get { return (from x in merges select x.Direction).Aggregate((A, B) => MathFunctions.Mean(A, B)); } }
 
-        public AForge.Point PredictNext { get { return (from x in merges select x.PredictNext).Aggregate((A, B) => MathFunctions.Mean(A, B)); } }
+    //    public AForge.Point PredictNext { get { return (from x in merges select x.PredictNext).Aggregate((A, B) => MathFunctions.Mean(A, B)); } }
 
-        /// <summary>
-        /// MergeData doesn't support First.
-        /// </summary>
-        public Blob First { get { throw new NotImplementedException(); } }
+    //    /// <summary>
+    //    /// MergeData doesn't support First.
+    //    /// </summary>
+    //    public Blob First { get { throw new NotImplementedException(); } }
 
-        public bool Valid { get { return merges.Any(b => b.Valid); } }
+    //    public int ValidValue { get { return (from mg in merges select mg.ValidValue).Max(); } }
+    //    public bool Valid { get { return merges.Any(m => m.Valid); } }
 
-        private IData<Blob, double, double, AForge.Point>[] merges;
+    //    private IData<Blob, double, double, AForge.Point>[] merges;
 
-        public MergeData(IData<Blob, double, double, AForge.Point> first, IData<Blob, double, double, AForge.Point> second)
-        {
-            merges = new IData<Blob, double, double, AForge.Point>[2] { first, second };
-        }
-        public MergeData(IEnumerable<IData<Blob, double, double, AForge.Point>> data)
-        {
-            merges = data.ToArray();
-        }
+    //    public MergeData(IData<Blob, double, double, AForge.Point> first, IData<Blob, double, double, AForge.Point> second)
+    //    {
+    //        merges = new IData<Blob, double, double, AForge.Point>[2] { first, second };
+    //    }
+    //    public MergeData(IEnumerable<IData<Blob, double, double, AForge.Point>> data)
+    //    {
+    //        merges = data.ToArray();
+    //    }
 
-        public double AddItem(Blob item) => (merges.Average(x => x.AddItem(item)));
+    //    public double AddItem(Blob item) => (merges.Average(x => x.AddItem(item)));
 
-        public void Draw(Graphics gr, Constants.HighlightFormat format)
-        {
-            foreach (var merge in merges)
-                merge.Draw(gr, format);
-        }
+    //    public void Draw(Graphics gr, Constants.HighlightFormat format)
+    //    {
+    //        foreach (var merge in merges)
+    //            merge.Draw(gr, format);
+    //    }
 
-        public double GetMatch(Blob item) => (from x in merges select x.GetMatch(item)).Average();
+    //    public double GetMatch(Blob item) => (from x in merges select x.GetMatch(item)).Average();
 
-        public void MakeInvalid()
-        {
-            foreach (var item in merges)
-                item.MakeInvalid();
-        }
+    //    public void MakeInvalid()
+    //    {
+    //        foreach (var item in merges)
+    //            item.MakeInvalid();
+    //    }
+    //    public void Revalidate()
+    //    {
+    //        foreach (var item in merges)
+    //            item.Revalidate();
+    //    }
 
-        public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
-        {
-            foreach (var blobData in merges)
-                blobData.PrintOutHeader(writer, format);
-        }
-        public void PrintOutTag(StreamWriter writer, Constants.OutputFormat format)
-        {
-            foreach (var blobData in merges)
-                blobData.PrintOutTag(writer, format);
-        }
-    }
+    //    public void PrintOutHeader(StreamWriter writer, Constants.OutputFormat format)
+    //    {
+    //        foreach (var blobData in merges)
+    //            blobData.PrintOutHeader(writer, format);
+    //    }
+    //    public void PrintOutTag(StreamWriter writer, Constants.OutputFormat format)
+    //    {
+    //        foreach (var blobData in merges)
+    //            blobData.PrintOutTag(writer, format);
+    //    }
+    //}
 
     class BlobData : IData<Blob, double, double, AForge.Point>
     {
@@ -123,6 +134,9 @@ namespace FlyCatcher
         public double averageSpeed { get { return sumAll / distances.Count; } }
         public double averageArea { get { return (from x in items select x.Area).Average(); } }
 
+        public double immediateSpeed { get { return distances.First.Value; } }
+        public double immediateArea { get { return items.First.Value.Area; } }
+
         public AForge.Point Direction
         {
             get
@@ -137,7 +151,14 @@ namespace FlyCatcher
 
         public string Tag { get; set; }
 
-        public bool Valid { get; private set; }
+        public int ValidValue { get; private set; }
+        public bool Valid { get { return ValidValue == 0; } }
+
+        //TODO: maybe more logic behind this...   
+        public void MakeInvalid() => ValidValue += 1;
+        public void Revalidate() => ValidValue = 0;
+        //public void Revalidate() => ValidValue -= 1;
+        
 
         private void removeLast()
         {
@@ -163,7 +184,7 @@ namespace FlyCatcher
         {
             maxCount = historyCount;
 
-            Valid = true;
+            ValidValue = 0;
 
             Tag = tag;
 
@@ -191,7 +212,7 @@ namespace FlyCatcher
         #region Output
         public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
         {       if (format.HasFlag(Constants.OutputFormat.ImmadiateArea))
-                    writer.Write($"{items.First.Value.Area}{Constants.Delimeter}");
+                    writer.Write($"{immediateArea}{Constants.Delimeter}");
 
                 if (format.HasFlag(Constants.OutputFormat.AverageArea))
                     writer.Write($"{averageArea}{Constants.Delimeter}");
@@ -271,10 +292,7 @@ namespace FlyCatcher
             //TODO: direction displayng doesn't work well
             if (format.HasFlag(Constants.HighlightFormat.Direction))
                 gr.DrawLine(blobHighliter, First.CenterOfGravity.ConverseToPointF(), (PredictNext + Direction.Multiply(1000)).ConverseToPointF());
-        }
-
-        public void MakeInvalid() => Valid = false;
-        //TODO: maybe more logic behind this...        
+        } 
         #endregion
     }
 }

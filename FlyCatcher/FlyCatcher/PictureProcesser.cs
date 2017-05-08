@@ -12,7 +12,7 @@ namespace FlyCatcher
     {
         private MainForm owner;
         private Invert inv;
-        private BaseInPlacePartialFilter thresholding
+        private IFilter thresholding
         {
             get
             {
@@ -45,6 +45,7 @@ namespace FlyCatcher
 
         bool shouldInvert { get { return owner.shouldInvert; } }
 
-        public Bitmap processItem(Bitmap image) => thresholding.Apply(grayscale.Apply(shouldInvert ? inv.Apply(image) : image));
+        private Bitmap invert(Bitmap image) => shouldInvert ? inv.Apply(image) : image;
+        public Bitmap processItem(Bitmap image) => invert(thresholding.Apply(grayscale.Apply(image)));
     }
 }

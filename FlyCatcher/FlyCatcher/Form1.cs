@@ -34,7 +34,8 @@ namespace FlyCatcher
         private static Threshold classic = new Threshold();
         private static SISThreshold sis = new SISThreshold();
         private static IterativeThreshold iter = new IterativeThreshold();
-        internal BaseInPlacePartialFilter threshold = otsu;
+        private static BradleyLocalThresholding brad = new BradleyLocalThresholding();
+        internal IFilter threshold = brad;
 
         internal double redCoeficient { get { return (double)redCoeficientControl.Value; } }
         internal double greenCoeficient { get { return (double)greenCoeficientControl.Value; } }
@@ -42,6 +43,7 @@ namespace FlyCatcher
 
         private int historyCount;
         private double penaltyValue;
+        private byte tossThreshold;
 
         public MainForm()
         {
@@ -113,9 +115,8 @@ namespace FlyCatcher
 
             runAnalysisFrom.Minimum = actualIndex.Minimum = runAnalysisTo.Minimum = pictureGiver.RunFromMin;
             runAnalysisFrom.Maximum = actualIndex.Maximum = runAnalysisTo.Maximum = step.Maximum = pictureGiver.RunToMax;
-
-            videoGroupBox.Text = $"Video - {pictureGiver.Tag}";
-            Text = $"FlyCatcher - {pictureGiver.Tag}";
+                        
+            Text = $"FlyCatcher - {pictureGiver.Path}";
 
             enableFlowControl();
             refreshActualFrame();
@@ -128,6 +129,7 @@ namespace FlyCatcher
         {
             historyCount = getSingleParameter("history", parameters, 10, int.Parse);
             penaltyValue = getSingleParameter("penalty", parameters, 10, int.Parse);
+            tossThreshold = getSingleParameter("valid_threshold", parameters, (byte)5, byte.Parse);
 
             blobUpperBound.Value = getSingleParameter("max_size", parameters, 10, int.Parse);
             blobLowerBound.Value = getSingleParameter("min_size", parameters, 5, int.Parse);
@@ -171,39 +173,39 @@ namespace FlyCatcher
             }
 
             if (parameters != null)
-                try
+                foreach (var param in parameters)
                 {
-                    foreach (var param in parameters)
+                    if (param.Key == "ellipse" || param.Key == "rectangle")
                     {
-                        if (param.Key == "ellipse" || param.Key == "rectangle")
+                        if (pictureGiver == null)
                         {
-                            foreach (var mask in param)
-                            {
-                                var pars = mask.Split(' ');
-                                RectangleF rect = MathFunctions.getRectangle(float.Parse(pars[1]), float.Parse(pars[2]), float.Parse(pars[3]), float.Parse(pars[4]));
-                                //TODO: better parsing here...
-                                switch (param.Key)
-                                {
-                                    case "ellipse":
-                                        addMask(DrawStyle.Ellipse, rect, pars[0]);
-                                        break;
-                                    case "rectangle":
-                                        addMask(DrawStyle.Rectangle, rect, pars[0]);
-                                        break;
-                                    default:
-                                        break;
-                                }
-
-
-                            }
+                            MessageBox.Show("The media file must be loaded prior to loading masks.", "Missing media file", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            break;
                         }
 
+                        foreach (var mask in param)
+                        {
+                            var pars = mask.Split(' ');
+                            RectangleF rect = MathFunctions.getRectangle(float.Parse(pars[1]), float.Parse(pars[2]), float.Parse(pars[3]), float.Parse(pars[4]));
+                            //TODO: better parsing here...
+                            switch (param.Key)
+                            {
+                                case "ellipse":
+                                    addMask(DrawStyle.Ellipse, rect, pars[0]);
+                                    break;
+                                case "rectangle":
+                                    addMask(DrawStyle.Rectangle, rect, pars[0]);
+                                    break;
+                                default:
+                                    break;
+                            }
+
+
+                        }
                     }
+
                 }
-                catch (NullReferenceException)
-                {
-                    MessageBox.Show("The media file must be loaded prior to loading masks.", "Missing media file", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+
         }
 
         private void initOutput(string path)
@@ -279,15 +281,18 @@ namespace FlyCatcher
 
         private void openFileClick(object sender, EventArgs e) => promptToOpenFile();
 
-        private void thresholdingCheck(ToolStripMenuItem currentItem)
+        private void toolStripCheck(ToolStripMenuItem currentItem)
         {
             if (currentItem != null)
             {
-                ((ToolStripMenuItem)currentItem.OwnerItem).DropDownItems.OfType<ToolStripMenuItem>().ToList().ForEach(item => { item.Checked = false; });
+                
+                foreach (var item in ((ToolStripMenuItem)currentItem.OwnerItem).DropDownItems.OfType<ToolStripMenuItem>())
+                    item.Checked = false;
+                
                 currentItem.Checked = true;
             }
         }
-        private void setThreshold(BaseInPlacePartialFilter threshold)
+        private void setThreshold(IFilter threshold)
         {
             this.threshold = threshold;
             refreshActualFrame();
@@ -295,23 +300,29 @@ namespace FlyCatcher
 
         private void otsuThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            thresholdingCheck(sender as ToolStripMenuItem);
+            toolStripCheck(sender as ToolStripMenuItem);
             setThreshold(otsu);
         }
         private void classicThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            thresholdingCheck(sender as ToolStripMenuItem);
+            toolStripCheck(sender as ToolStripMenuItem);
             setThreshold(classic);
         }
         private void sisThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            thresholdingCheck(sender as ToolStripMenuItem);
+            toolStripCheck(sender as ToolStripMenuItem);
             setThreshold(sis);
         }
         private void iterativeThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            thresholdingCheck(sender as ToolStripMenuItem);
+            toolStripCheck(sender as ToolStripMenuItem);
             setThreshold(iter);
+        }
+
+        private void bradleyThresholdingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            toolStripCheck(sender as ToolStripMenuItem);
+            setThreshold(brad);
         }
 
         private void saveCurrentConfiguration(object sender, EventArgs e)
@@ -330,20 +341,43 @@ namespace FlyCatcher
 
             if (Path.GetExtension(dial.FileName) == ".config")
             {
+                stream.WriteLine("Controls");
                 stream.WriteLine($"history = {historyCount}");
                 stream.WriteLine($"penalty = {penaltyValue}");
+                stream.WriteLine($"valid_threshold = {tossThreshold}");
 
+                stream.WriteLine();
+                stream.WriteLine("Mask properties");
                 stream.WriteLine($"max_size = {Math.Round(blobUpperBound.Value)}");
                 stream.WriteLine($"min_size = {Math.Round(blobLowerBound.Value)}");
 
+                stream.WriteLine();
                 stream.WriteLine($"height = {Math.Round(maskHeight.Value)}");
                 stream.WriteLine($"width = {Math.Round(maskWidth.Value)}");
 
+                stream.WriteLine();
+                stream.WriteLine("Image property");
                 stream.WriteLine($"invert_colors = {invertCheckBox.Checked}");
+
+                stream.WriteLine();
+                stream.WriteLine($"red_coef = {redCoeficient}");
+                stream.WriteLine($"green_coef = {greenCoeficient}");
+                stream.WriteLine($"blue_coef = {blueCoeficient}");
+
+                stream.WriteLine();
+                stream.WriteLine("Output");
+                foreach (var tag in Constants.OutputTag)                    
+                        stream.WriteLine($"{tag.Value} = {outputFormat.HasFlag(tag.Key)}");
+
+                stream.WriteLine();
+                stream.WriteLine("Highlighting");
+                foreach (var tag in Constants.HighlightTag)
+                    stream.WriteLine($"{tag.Value} = {highlightFormat.HasFlag(tag.Key)}");
             }
             else
                 stream.WriteLine($"clean = true");
 
+            stream.WriteLine("Masks");
             foreach (var mask in masks)
                 stream.WriteLine(mask.PrintOut());
 
@@ -470,7 +504,10 @@ namespace FlyCatcher
                     }
                 });
 
+            videoGroupBox.crossThreadOperation(() => videoGroupBox.Text = $"Video - {pictureGiver.Tag}: {progressMessage}");
         }
+        
+        string progressMessage { get { return displayPercentProgress ? $"{ ((pictureGiver.ActualIndex - pictureGiver.RunFrom) / (double)pictureGiver.RunTo) :P}" : $"{(pictureGiver.ActualIndex - pictureGiver.RunFrom)} / {pictureGiver.RunTo}"; } }
 
         Bitmap processImage(Bitmap image) => pictureProcessor.processItem(image);
 
@@ -499,8 +536,12 @@ namespace FlyCatcher
             printOutHeader();
 
             //TODO: check funcionality, adjust fps label
-            Outputs.Dispose();
-            Outputs = null;
+
+            if (Outputs != null)
+            {
+                Outputs.Dispose();
+                Outputs = null;
+            }
 
             //TODO: think about the consequences
             pictureGiver.Restart();
@@ -573,9 +614,9 @@ namespace FlyCatcher
             {
                 foreach (Bitmap picture in pictureGiver)
                 {
-                    if (actualState == state.stoped)
+                    if (actualState == state.stoped)                    
                         break;
-
+                    
                     //TODO: pausing handling - something better than active waiting for the switch of state.
                     //Althought there is only one Task with the code, so the active waiting in paused state is not so big overhead...
                     while (actualState == state.paused) ;
@@ -587,6 +628,7 @@ namespace FlyCatcher
                     videoSlider.crossThreadOperation(() => videoSlider.Value = (int)Math.Floor(MathFunctions.ValueToPercent(pictureGiver.RunFrom, pictureGiver.RunTo, actualPicture)));
                 }
 
+                MessageBox.Show($"Video analysis of {pictureGiver.Tag} completed.", "Analysis completed", MessageBoxButtons.OK, MessageBoxIcon.None);
                 this.crossThreadOperation(() => Stop());
             }).Start();
         }
@@ -680,6 +722,12 @@ namespace FlyCatcher
 
         private void parametrsValueChanged(object sender, EventArgs e) => refreshActualFrame();
 
+        bool displayPercentProgress { get { return percentToolStripMenuItem.Checked; } }
+        private void progressToolStrip_Click(object sender, EventArgs e)
+        {
+            toolStripCheck((ToolStripMenuItem) sender);
+            refreshActualFrame();
+        }
         #endregion
 
         #region Masking
@@ -702,6 +750,10 @@ namespace FlyCatcher
 
         private void addMask(DrawStyle style, RectangleF percentRectangle, string tag)
         {
+            if (percentRectangle.Bottom > 100 || percentRectangle.Top < 0 || percentRectangle.Left <0 || percentRectangle.Right > 100)            
+                MessageBox.Show($"The mask '{tag}' is out of bounds.", "Out of bounds", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            
+
             IMask<AForge.Point> mask = null;
             RectangleF realRectangle = MathFunctions.recalculateRectangle(percentRectangle, VideoBox.Image.Size);
 
@@ -726,10 +778,10 @@ namespace FlyCatcher
 
             maskControlContainer.Items.Add(mask);
 
-            if (!blobKeepers.Any(keeper => keeper.Tag == maskTag))
+            if (!blobKeepers.Any(keeper => keeper.Tag == tag))
             {
-                blobKeepers.Add(new BlobKeeperValidOnlyAssignment(maskTag, historyCount, penaltyValue));
-                if (Outputs != null) Outputs.AddStream(maskTag);
+                blobKeepers.Add(new BlobKeeperRevalidatingAssignment(tossThreshold, tag, historyCount, penaltyValue));
+                if (Outputs != null) Outputs.AddStream(tag);
             }
         }
 

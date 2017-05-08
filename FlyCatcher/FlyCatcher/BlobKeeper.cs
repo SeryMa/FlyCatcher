@@ -31,13 +31,6 @@ namespace FlyCatcher
         public ICollection<IData<Blob, double, double, AForge.Point>> ItemsData { get { return itemsData; } }
 
         protected List<IData<Blob, double, double, AForge.Point>> itemsData;
-        protected IData<Blob, double, double, AForge.Point>[] validData
-        {
-            get
-            {
-                return (from dta in itemsData where dta.Valid select dta).ToArray();
-            }
-        }
 
         protected int historyCount;
 
@@ -82,11 +75,34 @@ namespace FlyCatcher
         public abstract void ActualizeData(IEnumerable<Blob> items);
 
         #region Output
+        private bool outputBlobData(Constants.OutputFormat format) =>
+            format.HasFlag(Constants.OutputFormat.ImmadiateArea) ||
+            format.HasFlag(Constants.OutputFormat.AverageArea) ||
+            format.HasFlag(Constants.OutputFormat.Position) ||
+            format.HasFlag(Constants.OutputFormat.Prediction) ||
+            format.HasFlag(Constants.OutputFormat.AverageSpeed) ||
+            format.HasFlag(Constants.OutputFormat.ImmediateSpeed);
+
         public void PrintOut(StreamWriter writer, Constants.OutputFormat format)
         {
-            if (format.HasFlag(Constants.OutputFormat.Objects))
-                writer.Write($"{itemsData.Where(dta => dta.Valid).Count()}{Constants.Delimeter}");
+            var valids = itemsData.Where(dta => dta.Valid);
 
+            if (format.HasFlag(Constants.OutputFormat.Objects))
+                writer.Write($"{valids.Count()}{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalArea))
+                writer.Write(((valids.Count() > 0) ? (from dta in valids select dta.immediateArea).Sum() : 0) + Constants.Delimeter);
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalAvgArea))
+                writer.Write(((valids.Count() > 0) ? (from dta in valids select dta.immediateArea).Average() : 0) + Constants.Delimeter);
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalSpeed))
+                writer.Write(((valids.Count() > 0) ? (from dta in valids select dta.immediateSpeed).Sum() : 0) + Constants.Delimeter);
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalAvgSpeed))
+                writer.Write(((valids.Count() > 0) ? (from dta in valids select dta.immediateSpeed).Average() : 0) + Constants.Delimeter);
+
+            if (outputBlobData(format))
             foreach (var blobData in itemsData)
                 if (blobData.Valid)
                     blobData.PrintOut(writer, format);
@@ -116,7 +132,20 @@ namespace FlyCatcher
             if (format.HasFlag(Constants.OutputFormat.Objects))
                 writer.Write($"Object count{Constants.Delimeter}");
 
-            foreach (var blobData in itemsData)
+            if (format.HasFlag(Constants.OutputFormat.GlobalArea))
+                writer.Write($"Global area{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalAvgArea))
+                writer.Write($"Global average area{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalSpeed))
+                writer.Write($"Global speed{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalAvgSpeed))
+                writer.Write($"Global average speed{Constants.Delimeter}");
+
+            if (outputBlobData(format))
+                foreach (var blobData in itemsData)
                 blobData.PrintOutHeader(writer, format);
         }
         public void PrintOutTag(StreamWriter writer, Constants.OutputFormat format)
@@ -124,7 +153,20 @@ namespace FlyCatcher
             if (format.HasFlag(Constants.OutputFormat.Objects))
                 writer.Write($"{Constants.Delimeter}");
 
-            foreach (var blobData in itemsData)
+            if (format.HasFlag(Constants.OutputFormat.GlobalArea))
+                writer.Write($"{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalAvgArea))
+                writer.Write($"{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalSpeed))
+                writer.Write($"{Constants.Delimeter}");
+
+            if (format.HasFlag(Constants.OutputFormat.GlobalAvgSpeed))
+                writer.Write($"{Constants.Delimeter}");
+
+            if (outputBlobData(format))
+                foreach (var blobData in itemsData)
                 blobData.PrintOutTag(writer, format);
         }
         public void Draw(Graphics gr, Constants.HighlightFormat format)
@@ -138,6 +180,14 @@ namespace FlyCatcher
     class BlobKeeperValidOnlyAssignment : BlobKeeper
     {
         private SquareMatrix matrix;
+
+        protected IData<Blob, double, double, AForge.Point>[] validData
+        {
+            get
+            {
+                return (from dta in itemsData where dta.Valid select dta).ToArray();
+            }
+        }
 
         private double getMatch(IData<Blob, double, double, AForge.Point> agent, Blob blob) => agent.GetMatch(blob);
 
@@ -206,6 +256,57 @@ namespace FlyCatcher
         public BlobKeeperInvalidReplaceAssignment(string tag, int historyCount, double penalty) : base(tag, historyCount)
         {
             matrix = new SquareMatrix(penalty);
+        }
+        #endregion
+    }
+
+    class BlobKeeperRevalidatingAssignment : BlobKeeper
+    {
+        private SquareMatrix matrix;
+        private int threshold;
+
+        protected IData<Blob, double, double, AForge.Point>[] validData
+        {
+            get
+            {
+                return (from dta in itemsData where dta.ValidValue < threshold select dta).ToArray();
+            }
+        }
+
+        private double getMatch(IData<Blob, double, double, AForge.Point> agent, Blob blob) => agent.GetMatch(blob);
+
+        public void ActualizeData(Blob[] items)
+        {
+            var valids = validData;
+
+            var assignment = matrix.GetPerfectAssignment(valids, items, getMatch);
+
+            foreach (var properMatch in assignment[0])
+            {
+                if (!valids[properMatch.Item1].Valid)
+                    valids[properMatch.Item1].Revalidate();
+
+                valids[properMatch.Item1].AddItem(items[properMatch.Item2]);
+            }
+            foreach (var taskMatch in assignment[1])
+                itemsData.Add(new BlobData(historyCount, items[taskMatch.Item2], $"{Tag}-{ItemsData.Count}"));
+
+            foreach (var agentMatch in assignment[2])
+                valids[agentMatch.Item1].MakeInvalid();
+        }
+
+        public override void ActualizeData(IEnumerable<Blob> items) => ActualizeData(items.ToArray());
+
+        #region Ctors
+        public BlobKeeperRevalidatingAssignment(int revalidateThreshold, IEnumerable<Blob> items, string tag, int historyCount, double penalty) : base(items, tag, historyCount)
+        {
+            matrix = new SquareMatrix(penalty);
+            threshold = revalidateThreshold;
+        }
+        public BlobKeeperRevalidatingAssignment(int revalidateThreshold, string tag, int historyCount, double penalty) : base(tag, historyCount)
+        {
+            matrix = new SquareMatrix(penalty);
+            threshold = revalidateThreshold;
         }
         #endregion
     }

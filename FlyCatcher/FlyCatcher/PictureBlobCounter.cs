@@ -55,10 +55,21 @@ namespace FlyCatcher
 
             blobCounter.ProcessImage(image);
 
-            return from blob in blobCounter.GetObjects(image, false)
-                    from mask in Masks
-                    where mask.IsIn(blob.CenterOfGravity)
-                    select new Tuple<string, Blob>(mask.Tag, blob);
+
+            List<Tuple<string, Blob>> output = new List<Tuple<string, Blob>>();
+
+            foreach (var blob in blobCounter.GetObjectsInformation())
+                foreach (var mask in Masks)
+                    if (mask.IsIn(blob.CenterOfGravity) &&
+                        !output.Any(tpl => tpl.Item1 == mask.Tag && tpl.Item2 == blob))
+                        output.Add(new Tuple<string, Blob>(mask.Tag, blob));
+
+            return output;
+
+            //return from blob in blobCounter.GetObjects(image, false)
+            //       from mask in Masks
+            //       where mask.IsIn(blob.CenterOfGravity)
+            //       select new Tuple<string, Blob>(mask.Tag, blob);
         }
     }
 }
